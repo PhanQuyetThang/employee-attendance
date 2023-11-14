@@ -5,9 +5,13 @@ import SignUp from './pages/SignUp'
 import About from './pages/About'
 import Profile from './pages/Profile'
 import Manage from './pages/Manage'
+import CreateUser from './pages/CreateUser'
 import Header from './components/Header'
 import PrivateRoute from './components/PrivateRoute'
 import AdminRoute from './components/AdminRoute'
+import ProfileDetail from './pages/ProfileDetail'
+import Report from './pages/Report'
+import AttendanceDetail from './pages/AttendanceDetail'
 
 
 export default function App() {
@@ -24,6 +28,10 @@ export default function App() {
         </Route>
         <Route element={<AdminRoute />}>
           <Route path='/manage' element={<Manage />} />
+          <Route path='/create-user' element={<CreateUser />} />
+          <Route path='/profile-detail/:id' element={<ProfileDetail />} />
+          <Route path='/report' element={<Report />} />
+          <Route path='/attendance-detail' element={<AttendanceDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

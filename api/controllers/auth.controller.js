@@ -1,18 +1,42 @@
 import User from "../models/user.model.js";
 import bcryptjs from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid'; // Import phiên bản 4 của uuid
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken';
 
+// export const signup = async (req, res, next) => {
+//     const { username, email, password, phonenumber, department, address } = req.body;
+//     const hashedPassword = bcryptjs.hashSync(password, 10);
+
+//     // Generate a random userId (for example, a random string)
+//     const userId = Math.random().toString(36).substr(2, 10);
+
+//     const newUser = new User({ userId, username, email, password: hashedPassword, phonenumber, department, address });
+
+//     try {
+//         await newUser.save();
+//         res.status(201).json("User created successfully!");
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
 export const signup = async (req, res, next) => {
     const { username, email, password } = req.body;
-    const hashedPassword = bcryptjs.hashSync(password, 10)
-    const newUser = new User({ username, email, password: hashedPassword });
+    const hashedPassword = bcryptjs.hashSync(password, 10);
+
+    // Tạo một chuỗi UUID ngẫu nhiên
+    const userID = uuidv4();
+
+    // Chọn những trường dữ liệu cần thiết và thêm trường userId
+    const newUser = new User({ userID, username, email, password: hashedPassword });
+
     try {
         await newUser.save();
-        res.status(201).json("User created successfully!")
+        res.status(201).json("User created successfully!");
 
     } catch (error) {
-        next(error)
+        next(error);
     }
 };
 
