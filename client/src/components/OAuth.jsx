@@ -33,6 +33,6 @@ export default function OAuth() {
         }
     }
     return (
-        <button onClick={handleGoogleClick} type='button' className='bg-red-700 text-white p-3 rounded-lg uppercase hover:bg-red-800'>Continue with Google</button>
+        <button onClick={handleGoogleClick} type='button' className='bg-red-700 text-white p-2 rounded-xl hover:bg-red-800 hover:scale-105 hover:shadow-lg duration-500'>Continue with Google</button>
     )
 }

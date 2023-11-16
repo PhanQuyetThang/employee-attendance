@@ -57,10 +57,10 @@ export default function Report() {
             </ div>
             <form className="flex flex-col w-full">
 
-                <div className='mr-20 ml-20'>
+                <div className='mr-20 ml-20 bg-slate-200 rounded shadow-lg mt-3 '>
 
-                    <h1 className="text-lg font-semibold text-center text-slate-500">Time and Attendance</h1>
-                    <div className='border-1 border-slate-400 rounded-lg my-3 p-3 text-md text-slate-500 font-bold bg-transparent ml-2 mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
+                    <h1 className="text-2xl mt-3 font-semibold text-center text-slate-500">Time and Attendance</h1>
+                    <div className='border-1 border-slate-400 rounded-lg my-3 p-3 text-md text-slate-500 font-bold bg-slate-50 bg-opacity-60 backdrop-filter backdrop-blur-2xl ml-2 mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
                         <div className='sm:w-1/3  border-e-2 border-slate-300 p-2'>
                             <p className='text-center sm:text-left'>Name</p>
                         </div>
@@ -90,7 +90,7 @@ export default function Report() {
                     </div>
 
                     {users.map((user) => (
-                        <div className='border rounded-lg my-3 p-2 text-sm bg-white ml-2 mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
+                        <div className='border-1 border-slate-400 rounded my-3 p-2 text-sm  ml-2 mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
                             <div className='sm:w-1/3 flex gap-2 floast-left items-center'>
                                 <Link to={`/attendance-detail`} className='flex flex-row items-center gap-2'>
                                     <img src={user.avatar} className='rounded-full h-10' alt="" />
