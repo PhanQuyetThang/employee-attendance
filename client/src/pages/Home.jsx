@@ -30,12 +30,16 @@ const Home = () => {
                             <h3 className="text-xl text-center">Effortless Time Tracking</h3>
                             <h3 className="text-xl text-center mb-4">Exceptional Results.</h3>
                             <div className="flex mt-3 gap-4 justify-center">
-                                <button className="bg-purple-600 h-10 w-24 rounded-full font-semibold text-slate-100 hover:text-slate-100 hover:shadow-lg hover:bg-purple-800 duration-500">
-                                    Sign up
-                                </button>
-                                <button className="h-10 w-24 rounded-full border-2 border-purple-800 text-purple-800 hover:bg-purple-800 hover:border-purple-800 hover:shadow-lg hover:text-white duration-500">
-                                    Sign in
-                                </button>
+                                <Link to="/sign-up">
+                                    <button className="bg-purple-600 h-10 w-24 rounded-full font-semibold text-slate-100 hover:text-slate-100 hover:shadow-lg hover:bg-purple-800 duration-500">
+                                        Sign up
+                                    </button>
+                                </Link>
+                                <Link to="/sign-in">
+                                    <button className="h-10 w-24 rounded-full border-2 border-purple-800 text-purple-800 hover:bg-purple-800 hover:border-purple-800 hover:shadow-lg hover:text-white duration-500">
+                                        Sign in
+                                    </button>
+                                </Link>
                             </div>
                         </div>
                     </div>

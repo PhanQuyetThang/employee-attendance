@@ -70,12 +70,75 @@ export const ProfileDetail = async (req, res, next) => {
         if (!req.params.id) {
             throw errorHandler(402, "User not found!");
         }
-        const userId = req.params.id;
-        const user = await User.findById(userId);
+        const userID = req.params.id;
+        const user = await User.findOne({ userID: userID });
         const { password, ...rest } = user._doc;
         res.status(200).json(rest)
     } catch (error) {
         next(error);
     }
 };
+
+export const AttendanceDetail = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+
+        // Kiểm tra xem userId có giá trị không hoặc có định dạng hợp lệ không
+        if (!userId || !isValidUserId(userId)) {
+            throw new Error("Invalid user ID");
+        }
+
+        const user = await User.findById(userId);
+
+        // Kiểm tra xem user có tồn tại không
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Loại bỏ trường password trước khi trả về dữ liệu
+        const { password, ...rest } = user._doc;
+
+        res.status(200).json(rest);
+    } catch (error) {
+        // Xử lý lỗi và chuyển tiếp cho middleware xử lý lỗi tiếp theo
+        next(error);
+    }
+};
+
+// Hàm kiểm tra định dạng user ID có thể được thêm vào
+const isValidUserId = (userId) => {
+    // Kiểm tra logic định dạng user ID
+    return true;
+};
+
+export const saveBiometricData = async (req, res, next) => {
+    const { userID, method, data } = req.body;
+
+    try {
+        const user = await User.saveBiometricData(userID, method, data);
+        res.status(200).json({ success: true, message: 'Biometric data saved successfully', user });
+    } catch (error) {
+        next(error)
+    }
+};
+
+export const saveBiometric = async (req, res, next) => {
+    try {
+        const { userId, biometricData } = req.body;
+
+        // Assuming saveBiometricData is a function that saves data to your database
+        await saveBiometricData(userId, biometricData);
+
+        // Update the user's biometrics array
+        await User.findOneAndUpdate(
+            { userID: userId },
+            { $push: { biometrics: biometricData } },
+            { new: true }
+        );
+
+        res.json({ success: true, message: 'Biometric data saved successfully' });
+    } catch (error) {
+        next(error)
+    }
+}
 

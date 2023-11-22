@@ -5,7 +5,7 @@ import { BiSolidUser } from 'react-icons/bi'
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { FaUserCircle } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
-import { CiMail } from "react-icons/ci";
+import { LuLayoutDashboard } from "react-icons/lu";
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux"
 
@@ -48,6 +48,7 @@ export default function Manage() {
     }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
 
     const handleClickProfile = async (userId) => {
+        console.log("chekkk", userId)
         try {
             const response = await fetch(`/api/user/profile-detail/${userId}`, {
                 method: 'GET',
@@ -77,10 +78,24 @@ export default function Manage() {
         }
     };
 
+    const handleClickProfilee = () => {
+        console.log(user.userID)
+    }
+
     return (
         <div className="flex mx-auto mt-16 justify-between gap-4">
             <div className=' w-1/6 sm:inline border-r-2'>
-                <div className='fixed flex flex-col ml-5 text-left w-44 justify-center gap-2 transition duration-300 mt-12'>
+                <div className='fixed flex flex-col ml-2 text-left w-44 justify-center gap-2 transition duration-300 mt-12'>
+                    <span className=' flex-row gap-2 w-44 text-md font-semibold bg-slate-300 md:flex items-center p-2 rounded-lg hover:bg-slate-300 hover:text-slate-900 transition duration-500 cursor-pointer'>
+                        <LuLayoutDashboard />
+                        <Link to="/manage" className='self-center'>
+                            {currentUser && currentUser.role === 'admin' && (
+                                <p className='hidden sm:flex'>
+                                    Dashboard
+                                </p>
+                            )}
+                        </Link>
+                    </span>
                     <span className=' flex-row gap-2 w-44 text-md font-semibold md:flex items-center p-2 rounded-lg hover:bg-slate-300 hover:text-slate-900 transition duration-500 cursor-pointer'>
                         <HiOutlineDocumentReport />
                         <Link to="/report" className='self-center'>
@@ -110,10 +125,9 @@ export default function Manage() {
                 </div>
             </div>
 
-            <div className="text-center w-5/6 mt-5 flex justify-center">
-                <div className='text-center mt-2 w-full'>
-                    <h1 className='font-semibold flex p-3 text-2xl font-sans'>Overview</h1>
-
+            <div className="text-center w-5/6 mt-4 flex justify-center">
+                <div className='text-center w-full'>
+                    <h1 className='font-semibold flex p-3 text-3xl font-sans text-slate-500'>Overview</h1>
                     <div className='flex items-center ml-5'>
                         <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
                         <RangePicker className='flex ml-8 p-2 rounded-lg hover:border-violet-500 duration-500'
@@ -124,8 +138,7 @@ export default function Manage() {
                             }}
                         />
                     </div>
-                    <div className='flex flex-row p-4 h-1/5 gap-4 mb-2 mt-6'>
-
+                    <div className='flex flex-row p-4 h-48 gap-4 mb-2 mt-6'>
                         <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500 flex-col'>
                             <span className='flex font-sans font-semibold ml-3 mt-2 float-left'>
                                 <BiSolidUser className='mr-2 flex justify-center items-center my-auto' />
@@ -138,7 +151,7 @@ export default function Manage() {
                                 <BiSolidUser className='mr-2 flex justify-center items-center my-auto' />
                                 Current User
                             </span>
-                            <span className=' flex font-semibold font-sans text-4xl float-left ml-10 mt-2'>{amountUser.totalUsers}</span>
+                            <span className=' flex font-semibold font-sans text-4xl float-left ml-8 mt-2'>{amountUser.totalUsers}</span>
                         </div>
                         <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500'>
                             <span className='flex font-sans font-semibold m-3 float-left'>Attandance Amount</span>
@@ -146,17 +159,17 @@ export default function Manage() {
                     </div>
                     <div className=' m-2'>
                         <h1 className='flex mt-1'></h1>
-                        <div className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-bold mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
-                            <div className='sm:w-1/3'>
-                                <p className='text-center sm:text-left'>Username</p>
+                        <div className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-bold sm:flex sm:items-center sm:justify-between sm:gap-2'>
+                            <div className='sm:w-1/4 flex float-left ml-3'>
+                                <p className='text-center flex float-left sm:text-left'>Username</p>
                             </div>
-                            <div className='sm:w-1/3'>
+                            <div className='sm:w-2/5 flex ml-16'>
                                 <p className='text-center sm:text-left'>Email</p>
                             </div>
-                            <div className='sm:w-1/3'>
+                            <div className='sm:w-1/5 flex float-left'>
                                 <p className='text-center sm:text-left'>Role</p>
                             </div>
-                            <div>
+                            <div className='sm:w-1/5 flex justify-center ml-3'>
                                 <p className="text-slate-800 md:my-0 my-7 pl-2 pr-2 text-center duration-500">
                                     Detail
                                 </p>
@@ -164,19 +177,19 @@ export default function Manage() {
                         </div>
                         {users.map((user) => (
                             <div className='bg-slate-300 rounded bg-opacity-30 my-3 p-3 mr-2 sm:flex font-light text-md sm:items-center sm:justify-between sm:gap-2'>
-                                <div className='sm:w-1/3 flex flex-row items-center gap-4 ml-24 '>
-                                    <FaUserCircle className='flex text-violet-600 w-6 h-6 shadow-xl' />
+                                <div className='sm:w-1/4 flex flex-row float-left gap-2'>
+                                    <FaUserCircle className='flex text-violet-600 w-6 h-6 rounded-full shadow-xl' />
                                     <p className='text-center sm:text-left'>{user.username}</p>
                                 </div>
-                                <div className='sm:w-1/3 '>
+                                <div className='sm:w-2/5 flex float-left ml-24'>
                                     <p className='text-center sm:text-left'>{user.email}</p>
                                 </div>
-                                <div className='sm:w-1/3 '>
+                                <div className='sm:w-1/5  flex float-left ml-10'>
                                     <p className='text-center sm:text-left'>{user.role}</p>
                                 </div>
-                                <div>
-                                    <Link to={`/profile-detail/${user._id}`} className='self-center text-center'>
-                                        <button className='p-2 ml-2 w-8 justify-center rounded-full flex text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
+                                <div className='sm:w-1/5 flex justify-center ml-10'>
+                                    <Link to={`/profile-detail/${user.userID}`} onClick={handleClickProfile(user.userID)} className='flex self-center text-center'>
+                                        <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
                                             <IoIosArrowForward />
                                         </button>
                                     </Link>

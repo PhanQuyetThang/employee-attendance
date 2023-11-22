@@ -22,14 +22,14 @@ import jwt from 'jsonwebtoken';
 // };
 
 export const signup = async (req, res, next) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, phonenumber, department } = req.body;
     const hashedPassword = bcryptjs.hashSync(password, 10);
 
     // Tạo một chuỗi UUID ngẫu nhiên
     const userID = uuidv4();
 
     // Chọn những trường dữ liệu cần thiết và thêm trường userId
-    const newUser = new User({ userID, username, email, password: hashedPassword });
+    const newUser = new User({ userID, username, email, password: hashedPassword, phonenumber, department });
 
     try {
         await newUser.save();
@@ -59,34 +59,34 @@ export const signin = async (req, res, next) => {
 
 export const google = async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: req.body.email })
-        console.log(user)
+        const user = await User.findOne({ email: req.body.email });
+
         if (user) {
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
-            //destructuring assignment with password, _doc means document data of user
+            // Xử lý khi người dùng đã tồn tại
+            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
             const { password: pass, ...rest } = user._doc;
-            //rest contains user data except password
-            res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest)
+            res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
         } else {
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-            const hashedPassword = bcryptjs.hashSync(generatedPassword, 10)
+            const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+            const generatedUserId = Math.floor(100000 + Math.random() * 900000); // Tạo số ngẫu nhiên từ 100000 đến 999999;
             const newUser = new User({
-                username: req.body.name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4),
+                userID: generatedUserId,
+                username: req.body.name,
                 email: req.body.email,
                 password: hashedPassword,
                 avatar: req.body.photo,
-            })
-            await newUser.save()
-            const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET)
-            //destructuring assignment with password, _doc means document data of user
+            });
+            await newUser.save();
+
+            const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
             const { password: pass, ...rest } = newUser._doc;
-            //rest contains user data except password
-            res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest)
+            res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
         }
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 export const signout = async (req, res, next) => {
     try {

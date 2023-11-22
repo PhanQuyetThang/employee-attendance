@@ -46,3 +46,6 @@ app.use((error, req, res, next) => {
         message
     })
 })
+
+//Create Endpoint to connect with ESP32
+app.use("/api/esp", userRouter);
