@@ -1,8 +1,15 @@
 import User from "../models/user.model.js"
 import { errorHandler } from "../utils/error.js"
 import bcryptjs from 'bcryptjs'
+import fuzzy from 'fuzzy';
 
 export const test = (req, res) => {
+    res.json({
+        message: 'Api is working!',
+    })
+}
+
+export const testApi = (req, res) => {
     res.json({
         message: 'Api is working!',
     })
@@ -126,19 +133,61 @@ export const saveBiometric = async (req, res, next) => {
     try {
         const { userId, biometricData } = req.body;
 
-        // Assuming saveBiometricData is a function that saves data to your database
-        await saveBiometricData(userId, biometricData);
+        // Tìm kiếm người dùng trong cơ sở dữ liệu với userID
+        const user = await User.findOne({ userID: userId });
 
-        // Update the user's biometrics array
-        await User.findOneAndUpdate(
-            { userID: userId },
-            { $push: { biometrics: biometricData } },
-            { new: true }
+        // Kiểm tra xem user có tồn tại không
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Thêm biometricData vào mảng biometrics của user
+        user.biometrics.push({
+            method: biometricData.method,
+            data: biometricData.data
+        });
+
+        // Lưu cập nhật vào cơ sở dữ liệu
+        await user.save();
+
+        // Loại bỏ trường password trước khi trả về dữ liệu
+        const { password, ...rest } = user._doc;
+
+        // Gửi phản hồi về client với thông tin user đã được cập nhật
+        res.status(200).json({ rest, message: 'Biometric data saved successfully', user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Hàm kiểm tra vân tay
+export const checkFingerprint = async (req, res, next) => {
+    try {
+        const { userId, fingerprintData } = req.body;
+
+        // Tìm kiếm người dùng trong cơ sở dữ liệu với userID
+        const user = await User.findOne({ userID: userId });
+
+        // Kiểm tra xem user có tồn tại không
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Lấy ra mảng biometrics của người dùng
+        const userBiometrics = user.biometrics;
+
+        // So sánh dữ liệu vân tay mới với dữ liệu trong mảng biometrics
+        const matchingBiometric = userBiometrics.find((biometric) =>
+            biometric.data.includes(fingerprintData)
         );
 
-        res.json({ success: true, message: 'Biometric data saved successfully' });
+        // Kết quả của quá trình kiểm tra
+        const isMatch = !!matchingBiometric;
+
+        // Gửi phản hồi về client với kết quả kiểm tra
+        res.status(200).json({ isMatch });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 

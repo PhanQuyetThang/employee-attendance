@@ -75,37 +75,34 @@ const ProfileDetail = () => {
     const handleGetBiometric = async (userId) => {
         try {
             const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await fetch(`${esp32Endpoint}/biometric/${userId}`, {
-                method: 'GET',
+            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
-            if (!response.ok) {
+            if (!response.status === 200) {
                 console.error(`Request to ESP32 failed with status: ${response.status}`);
                 return;
             }
 
-            const biometricData = await response.json();
+            const biometricData = response.data;
 
             // Now, send the biometric data to your server for saving
-            const saveBiometricResponse = await fetch('/api/user/save-biometric', {
-                method: 'POST',
+            const saveBiometricResponse = await axios.post('/api/user/save-biometric', {
+                userId,
+                biometricData,
+            }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId,
-                    biometricData,
-                }),
             });
 
-            if (!saveBiometricResponse.ok) {
+            if (!saveBiometricResponse.status === 200) {
                 console.error(`Failed to save biometric data with status: ${saveBiometricResponse.status}`);
                 // Handle the error as needed
             } else {
-                const saveBiometricResult = await saveBiometricResponse.json();
+                const saveBiometricResult = saveBiometricResponse.data;
                 console.log('Response from server:', saveBiometricResult);
                 // Handle the success or further logic
             }
