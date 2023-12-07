@@ -134,6 +134,13 @@ export default function Header() {
                             </li>
                         )}
                     </Link>
+                    <Link to="/attendance-info" className='self-center' onClick={() => setResponsiveOpen(false)}>
+                        {currentUser && currentUser.role === 'employee' && (
+                            <li className="  text-slate-500 font-semibold md:ml-8 ml-5 md:my-0 my-7 hover:text-gray-400 duration-500">
+                                Attendance Info
+                            </li>
+                        )}
+                    </Link>
                     {currentUser ? (
                         <div className="relative group top-3">
                             <img

@@ -39,12 +39,18 @@ export default function CreateUser() {
             }
             setLoading(false)
             setError(null)
-            navigate('/manage')
+
+            // Lấy userID từ response hoặc từ data trả về từ server
+            const userID = data.userID; // Thay thế bằng phương thức lấy userID tương ứng
+
+            // Định tuyến về trang profile-detail với userID
+            history.push(`/profile-detail/${userID}`);
         } catch (error) {
             setLoading(false)
             setError(error.message)
         }
     }
+
     return (
         <>
             <div className="flex mx-auto mt-16 justify-between gap-4">

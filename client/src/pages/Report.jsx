@@ -122,9 +122,9 @@ export default function Report() {
 
             <div className="text-center w-5/6 mt-5 flex justify-center">
                 <div className='text-center mt-2 w-full'>
-                    <h1 className='font-semibold flex p-3 text-2xl font-sans'>Report</h1>
+                    <h1 className='font-bold flex p-3 text-3xl text-gray-500 font-sans'>Report</h1>
 
-                    <div className='flex items-center ml-5'>
+                    {/* <div className='flex items-center ml-5'>
                         <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
                         <RangePicker className='flex ml-8 p-2 rounded-lg hover:border-violet-500 duration-500'
                             onChange={(values) => {
@@ -133,28 +133,28 @@ export default function Report() {
                                 }))
                             }}
                         />
-                    </div>
+                    </div> */}
 
                     <div className=' m-2'>
                         <h1 className='flex mt-1'></h1>
                         <div className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-bold mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
                             <div className='sm:w-1/4 flex float-left'>
-                                <p className='text-center sm:text-left'>Username</p>
+                                <p className='text-center text-gray-500 sm:text-left'>Username</p>
                             </div>
                             <div className='sm:w-1/3 flex float-left'>
-                                <p className='text-center sm:text-left'>Email</p>
+                                <p className='text-center text-gray-500 sm:text-left'>Email</p>
                             </div>
                             <div className='sm:w-1/5 flex float-left'>
-                                <p className='text-center sm:text-left'>Department</p>
+                                <p className='text-center text-gray-500 sm:text-left'>Department</p>
                             </div>
                             <div className='sm:w-1/5 flex float-left'>
-                                <p className='text-center sm:text-left'>Clock in</p>
+                                <p className='text-center text-gray-500 sm:text-left'>Clock in</p>
                             </div>
                             <div className='sm:w-1/5 flex float-left'>
-                                <p className='text-center sm:text-left'>Clock out</p>
+                                <p className='text-center text-gray-500 sm:text-left'>Clock out</p>
                             </div>
                             <div className='w-1/6'>
-                                <p className="text-slate-800 md:my-0 my-7 pl-2 pr-2 text-center">
+                                <p className="text-slate-500 md:my-0 my-7 pl-2 pr-2 text-center">
                                     Detail
                                 </p>
                             </div>
@@ -176,9 +176,9 @@ export default function Report() {
                                 <div className='sm:w-1/5 flex float-left'>
                                     <p className='text-center sm:text-left'>unknown</p>
                                 </div>
-                                <div className='w-1/6 flex justify-center'>
-                                    <Link to={`/attendance-detail/${user._id}`} className='self-center text-center'>
-                                        <button className='p-2 ml-2 w-8 justify-center rounded-full flex text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
+                                <div className='sm:w-1/5 flex justify-center ml-10'>
+                                    <Link to={`/attendance-detail/${user.userID}`} className='flex self-center text-center'>
+                                        <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
                                             <IoIosArrowForward />
                                         </button>
                                     </Link>
@@ -188,8 +188,6 @@ export default function Report() {
                     </div>
                 </div>
             </div>
-
-
         </div>
     );
 }

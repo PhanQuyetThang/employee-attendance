@@ -21,12 +21,25 @@ import jwt from 'jsonwebtoken';
 //     }
 // };
 
+const generateRandomUserID = () => {
+    const min = 100000;
+    const max = 999999;
+
+    // Tạo một số ngẫu nhiên từ 100000 đến 999999 (bao gồm 6 chữ số)
+    const randomUserID = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // Chuyển số ngẫu nhiên thành chuỗi
+    const userID = randomUserID.toString();
+
+    return userID;
+};
+
 export const signup = async (req, res, next) => {
     const { username, email, password, phonenumber, department } = req.body;
     const hashedPassword = bcryptjs.hashSync(password, 10);
 
-    // Tạo một chuỗi UUID ngẫu nhiên
-    const userID = uuidv4();
+    // Tạo userID với 6 chữ số ngẫu nhiên
+    const userID = generateRandomUserID();
 
     // Chọn những trường dữ liệu cần thiết và thêm trường userId
     const newUser = new User({ userID, username, email, password: hashedPassword, phonenumber, department });
@@ -34,11 +47,11 @@ export const signup = async (req, res, next) => {
     try {
         await newUser.save();
         res.status(201).json("User created successfully!");
-
     } catch (error) {
         next(error);
     }
 };
+
 
 export const signin = async (req, res, next) => {
     const { email, password } = req.body;

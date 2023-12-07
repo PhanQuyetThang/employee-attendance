@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux"
 import { IoMdFingerPrint } from "react-icons/io";
+import { FaIdCard } from "react-icons/fa";
 import { app } from '../firebase'
 import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signOutUserStart, signOutUserSuccess, signOutUserFailure } from '../redux/user/userSlice';
 
@@ -26,7 +27,6 @@ const ProfileDetail = () => {
                     // Xử lý khi có lỗi hoặc user không tồn tại
                     console.error(data.message || 'User not found');
                     // Redirect về trang trước đó nếu có lỗi hoặc user không tồn tại
-
                     return;
                 }
 
@@ -72,7 +72,46 @@ const ProfileDetail = () => {
         }
     }
 
-    const handleGetBiometric = async (userId) => {
+    const handleGetFingerprint = async (userId) => {
+        try {
+            const esp32Endpoint = 'your-esp32-endpoint';
+            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.status === 200) {
+                console.error(`Request to ESP32 failed with status: ${response.status}`);
+                return;
+            }
+
+            const biometricData = response.data;
+
+            // Now, send the biometric data to your server for saving
+            const saveBiometricResponse = await axios.post('/api/user/save-biometric', {
+                userId,
+                biometricData,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!saveBiometricResponse.status === 200) {
+                console.error(`Failed to save biometric data with status: ${saveBiometricResponse.status}`);
+                // Handle the error as needed
+            } else {
+                const saveBiometricResult = saveBiometricResponse.data;
+                console.log('Response from server:', saveBiometricResult);
+                // Handle the success or further logic
+            }
+        } catch (error) {
+            console.error('An unexpected error occurred:', error);
+        }
+    };
+
+    const handleGetRFID = async (userId) => {
         try {
             const esp32Endpoint = 'your-esp32-endpoint';
             const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
@@ -170,9 +209,14 @@ const ProfileDetail = () => {
                             <button className="bg-violet-600 py-2 w-1/4 shadow-xl rounded-lg text-white hover:bg-violet-900 duration-500">
                                 Update
                             </button>
-                            <Link onClick={() => handleGetBiometric(user.userID)} className='flex w-1/4 self-center text-center'>
-                                <button className='p-2 ml-2 flex justify-end rounded-full text-center text-white bg-green-600 hover:bg-green-900 hover:scale-125 duration-500'>
+                            <Link onClick={() => handleGetFingerprint(user.userID)} className='flex self-center text-center'>
+                                <button className='p-2 ml-2 flex justify-start rounded-full text-center text-white bg-green-600 hover:bg-green-900 hover:scale-125 duration-500'>
                                     <IoMdFingerPrint />
+                                </button>
+                            </Link>
+                            <Link onClick={() => handleGetRFID(user.userID)} className='flex self-center text-center'>
+                                <button className='p-2 flex justify-start rounded-full text-center text-white bg-yellow-600 hover:bg-yellow-900 hover:scale-125 duration-500'>
+                                    <FaIdCard />
                                 </button>
                             </Link>
                         </div>

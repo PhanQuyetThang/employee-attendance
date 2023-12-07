@@ -39,8 +39,7 @@ export const updateUser = async (req, res, next) => {
     }
 }
 
-export const deleteUser = async (req, res, next) => {
-    if (req.user.id !== req.params.id) return next(errorHandler(401, "You can only delete your own account!"))
+export const testdelete = async (req, res, next) => {
     try {
         await User.findByIdAndDelete(req.params.id, { new: true })
         res.clearCookie("access_token")
@@ -49,6 +48,25 @@ export const deleteUser = async (req, res, next) => {
         next(error)
     }
 }
+
+export const deleteUser = async (req, res, next) => {
+    try {
+        // Tìm người dùng theo userID và xóa
+        const result = await User.deleteOne({ userID: req.params.id });
+
+        // Kiểm tra xem có bản ghi nào bị xóa không
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: "Người dùng không tồn tại." });
+        }
+
+        // Gửi phản hồi về phía client
+        res.status(200).json({ success: true, message: "Người dùng đã được xóa!" });
+    } catch (error) {
+        // Xử lý lỗi và chuyển tiếp cho middleware xử lý lỗi tiếp theo
+        next(error);
+    }
+};
+
 
 export const getUser = async (req, res, next) => {
     try {
@@ -88,26 +106,14 @@ export const ProfileDetail = async (req, res, next) => {
 
 export const AttendanceDetail = async (req, res, next) => {
     try {
-        const userId = req.params.id;
-
-        // Kiểm tra xem userId có giá trị không hoặc có định dạng hợp lệ không
-        if (!userId || !isValidUserId(userId)) {
-            throw new Error("Invalid user ID");
+        if (!req.params.id) {
+            throw errorHandler(402, "User not found!");
         }
-
-        const user = await User.findById(userId);
-
-        // Kiểm tra xem user có tồn tại không
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        // Loại bỏ trường password trước khi trả về dữ liệu
+        const userID = req.params.id;
+        const user = await User.findOne({ userID: userID });
         const { password, ...rest } = user._doc;
-
-        res.status(200).json(rest);
+        res.status(200).json(rest)
     } catch (error) {
-        // Xử lý lỗi và chuyển tiếp cho middleware xử lý lỗi tiếp theo
         next(error);
     }
 };
@@ -191,3 +197,17 @@ export const checkFingerprint = async (req, res, next) => {
     }
 };
 
+
+export const Search = async (req, res, next) => {
+    try {
+        if (!req.params.id) {
+            throw errorHandler(402, "User not found!");
+        }
+        const userID = req.params.id;
+        const user = await User.findOne({ userID: userID });
+        const { password, ...rest } = user._doc;
+        res.status(200).json(rest)
+    } catch (error) {
+        next(error);
+    }
+};

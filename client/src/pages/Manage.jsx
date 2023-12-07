@@ -6,8 +6,12 @@ import { HiOutlineDocumentReport } from "react-icons/hi";
 import { FaUserCircle } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { LuLayoutDashboard } from "react-icons/lu";
+import { MdDelete } from "react-icons/md";
+import { IoSearch } from "react-icons/io5";
+import { AiFillWarning } from 'react-icons/ai'
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux"
+import { deleteUserStart, deleteUserSuccess, deleteUserFailure } from '../redux/user/userSlice';
 
 import { DatePicker } from 'antd';
 import moment from 'moment'
@@ -15,13 +19,16 @@ import moment from 'moment'
 const { RangePicker } = DatePicker
 
 export default function Manage() {
+    const dispatch = useDispatch();
     const navigate = useNavigate(); // Sử dụng hook useNavigate để chuyển hướng
-    const { currentUser } = useSelector(state => state.user);
+    const { currentUser, loading, error } = useSelector(state => state.user);
     const [users, setUsers] = useState([]);
     const [amountUser, setAmountUser] = useState(0)
-    const [formData, setFormData] = useState(false);
-    const [dateRange, setDateRange] = useState([]);
+    const [formData, setFormData] = useState({})
+    const [password, setPassword] = useState({})
     const [dates, setDates] = useState([])
+    const [userIDToDelete, setUserIDToDelete] = useState()
+    const [deleteConfirmation, setDeleteConfirmation] = useState(false);
 
     console.log(dates)
 
@@ -33,10 +40,6 @@ export default function Manage() {
             .catch((error) => console.error(error));
     }, []);
 
-    // const handleCreateUser = () => {
-    //     setShowCreateUserForm(true)
-    // }
-
     useEffect(() => {
         fetch('/api/user/amount-user')
             .then((response) => response.json())
@@ -47,39 +50,48 @@ export default function Manage() {
             .catch((error) => console.error(error));
     }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
 
-    const handleClickProfile = async (userId) => {
-        console.log("chekkk", userId)
-        try {
-            const response = await fetch(`/api/user/profile-detail/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            // Kiểm tra status code
-            if (!response.ok) {
-                console.error(`Request failed with status: ${response.status}`);
-                return;
-            }
-
-            // Lấy dữ liệu từ response
-            const { success, message, data } = await response.json();
-
-            if (!success) {
-                console.error(`API Error: ${message}`);
-                return;
-            }
-
-            // Chuyển hướng sang trang ProfileDetail với thông tin người dùng
-            navigate(`/`);
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.id]: e.target.value });
+        console.log("Check user ID:", formData);
     };
 
-    const handleClickProfilee = () => {
-        console.log(user.userID)
+    const handleInputPassword = (e) => {
+        setPassword({ ...password, [e.target.id]: e.target.value });
+        console.log("Check password:", password);
+    }
+
+    const handleClickDeleteUser = (userID) => {
+        console.log(userID)
+        setUserIDToDelete(userID)
+        setDeleteConfirmation(!deleteConfirmation)
+    }
+
+    const handleDeleteUser = async (userID, password) => {
+        if (password === currentUser.password) {
+            try {
+                setDeleteConfirmation(false);
+                dispatch(deleteUserStart());
+                const res = await fetch(`/api/user/delete/${userID}`, {
+                    method: "DELETE",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (data.success === false) {
+                    dispatch(deleteUserFailure(data.message));
+                    return;
+                }
+                navigate('/manage')
+            } catch (error) {
+                dispatch(deleteUserFailure(error.message))
+            }
+        } else {
+            // Hiển thị thông báo mật khẩu không đúng
+            alert('Mật khẩu không đúng. Vui lòng thử lại.');
+        }
+
+
     }
 
     return (
@@ -130,13 +142,22 @@ export default function Manage() {
                     <h1 className='font-semibold flex p-3 text-3xl font-sans text-slate-500'>Overview</h1>
                     <div className='flex items-center ml-5'>
                         <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
-                        <RangePicker className='flex ml-8 p-2 rounded-lg hover:border-violet-500 duration-500'
+                        <RangePicker className='flex ml-4 p-2 rounded-lg hover:border-violet-500 duration-500'
                             onChange={(values) => {
                                 setDates(values.map(item => {
                                     return moment(item).format('DD-MM-YYYY')
                                 }))
                             }}
                         />
+                        <h2 className='flex float-left font-semibold text-lg text-slate-500 ml-3'>Search:</h2>
+                        <form className='flex flex-row bg-white rounded-full p-1 ml-4 border-gray-300 border-1 hover:border-violet-500 duration-500'>
+                            <input type="text" onChange={handleChange} id='userID' placeholder='employee id...' className='flex ml-4 p-1 bg-transparent rounded-lg outline-none  hover:border-violet-500 duration-500 ' />
+                            <Link to={`/employee-info/${formData.userID}`} className='flex self-center text-center'>
+                                <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-105 duration-500'>
+                                    <IoSearch className='text-white font-bold' />
+                                </button>
+                            </Link>
+                        </form>
                     </div>
                     <div className='flex flex-row p-4 h-48 gap-4 mb-2 mt-6'>
                         <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500 flex-col'>
@@ -157,13 +178,32 @@ export default function Manage() {
                             <span className='flex font-sans font-semibold m-3 float-left'>Attandance Amount</span>
                         </div>
                     </div>
+                    {deleteConfirmation && (
+                        <div className="fixed inset-0 flex items-center justify-center transition duration-300">
+                            <div className="modal-overlay fixed inset-0 bg-black opacity-50"></div>
+                            <div className="modal-container bg-white w-96 h-46 rounded-lg shadow-lg z-50 overflow-hidden transition duration-300">
+                                <div>
+                                    <AiFillWarning className='text-red-700 self-center text-4xl font-semibold mx-auto mt-2' />
+                                    <h5 className="text-center p-1 text-red-800 font-semibold" id="exampleModalLabel">Delete Confirmation</h5>
+                                </div>
+                                <div className="text-center p-1 text-slate-600 font-semibold">
+                                    <p>Please enter admin password to delete this user</p>
+                                    <input type="password" id='password' onChange={handleInputPassword} className='w-3/4 p-1 border-1 border-slate-400 rounded outline-none mt-3 hover:border-violet-700 transition-all duration-500' />
+                                </div>
+                                <div className="flex justify-between mx-10 my-3">
+                                    <button onClick={() => handleDeleteUser(userIDToDelete)} className="w-32 p-1 rounded-3xl bg-red-700 text-white">Confirm</button>
+                                    <button onClick={() => setDeleteConfirmation(false)} className="w-32 p-2 rounded-3xl bg-slate-700 text-white">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className=' m-2'>
                         <h1 className='flex mt-1'></h1>
                         <div className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-bold sm:flex sm:items-center sm:justify-between sm:gap-2'>
-                            <div className='sm:w-1/4 flex float-left ml-3'>
+                            <div className='sm:w-1/3 flex float-left ml-3'>
                                 <p className='text-center flex float-left sm:text-left'>Username</p>
                             </div>
-                            <div className='sm:w-2/5 flex ml-16'>
+                            <div className='sm:w-2/5 flex'>
                                 <p className='text-center sm:text-left'>Email</p>
                             </div>
                             <div className='sm:w-1/5 flex float-left'>
@@ -174,23 +214,35 @@ export default function Manage() {
                                     Detail
                                 </p>
                             </div>
+                            <div className='sm:w-1/5 flex justify-center ml-3'>
+                                <p className="text-slate-800 md:my-0 my-7 pl-2 pr-2 text-center duration-500">
+                                    Action
+                                </p>
+                            </div>
                         </div>
                         {users.map((user) => (
                             <div className='bg-slate-300 rounded bg-opacity-30 my-3 p-3 mr-2 sm:flex font-light text-md sm:items-center sm:justify-between sm:gap-2'>
-                                <div className='sm:w-1/4 flex flex-row float-left gap-2'>
-                                    <FaUserCircle className='flex text-violet-600 w-6 h-6 rounded-full shadow-xl' />
-                                    <p className='text-center sm:text-left'>{user.username}</p>
+                                <div className='sm:w-2/5 flex flex-row float-left gap-2'>
+                                    <FaUserCircle className='flex text-violet-600 w-8 h-8 rounded-full shadow-xl' />
+                                    <p className='w-full text-left sm:text-left'>{user.username}</p>
                                 </div>
-                                <div className='sm:w-2/5 flex float-left ml-24'>
+                                <div className='sm:w-2/5 flex float-left'>
                                     <p className='text-center sm:text-left'>{user.email}</p>
                                 </div>
                                 <div className='sm:w-1/5  flex float-left ml-10'>
                                     <p className='text-center sm:text-left'>{user.role}</p>
                                 </div>
                                 <div className='sm:w-1/5 flex justify-center ml-10'>
-                                    <Link to={`/profile-detail/${user.userID}`} onClick={handleClickProfile(user.userID)} className='flex self-center text-center'>
+                                    <Link to={`/profile-detail/${user.userID}`} className='flex self-center text-center'>
                                         <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
                                             <IoIosArrowForward />
+                                        </button>
+                                    </Link>
+                                </div>
+                                <div className='sm:w-1/5 flex justify-center ml-10'>
+                                    <Link className='flex self-center text-center' onClick={() => handleClickDeleteUser(user.userID)}>
+                                        <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-red-700 hover:bg-red-900 hover:scale-125 duration-500'>
+                                            <MdDelete />
                                         </button>
                                     </Link>
                                 </div>
@@ -199,41 +251,6 @@ export default function Manage() {
                     </div>
                 </div>
             </div>
-
-            {/* <div className="max-w-sm mx-auto text-center mt-5">
-                
-                <form hidden className="flex flex-col gap-3">
-                    <input
-                        type="text"
-                        placeholder='username...'
-                        value=""
-                        className='border p-3 rounded-lg'
-                        id='username'
-
-                    />
-                    <input
-                        type="email"
-                        placeholder='email...'
-                        value=""
-                        className='border p-3 rounded-lg'
-                        id='email'
-
-                    />
-                    <input
-                        type="password"
-                        placeholder='password...'
-                        value=""
-                        className='border p-3 rounded-lg'
-                        id='password'
-
-                    />
-                    <button
-
-                        className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:shadow-lg hover:bg-slate-800 disabled:opacity-70'>
-
-                    </button>
-                </form>
-            </div> */}
         </div>
     );
 }

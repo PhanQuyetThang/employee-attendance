@@ -12,6 +12,9 @@ import AdminRoute from './components/AdminRoute'
 import ProfileDetail from './pages/ProfileDetail'
 import Report from './pages/Report'
 import AttendanceDetail from './pages/AttendanceDetail'
+import SearchEmployee from './pages/SearchEmployee'
+import EmployeeRoute from './components/EmployeeRoute'
+import AttendanceInfo from './pages/AttendanceInfo'
 
 
 export default function App() {
@@ -31,7 +34,11 @@ export default function App() {
           <Route path='/create-user' element={<CreateUser />} />
           <Route path='/profile-detail/:id' element={<ProfileDetail />} />
           <Route path='/report' element={<Report />} />
-          <Route path='/attendance-detail' element={<AttendanceDetail />} />
+          <Route path='/attendance-detail/:id' element={<AttendanceDetail />} />
+          <Route path='/employee-info/:id' element={<SearchEmployee />} />
+        </Route>
+        <Route element={<EmployeeRoute />}>
+          <Route path='/attendance-info' element={<AttendanceInfo />} />
         </Route>
       </Routes>
     </BrowserRouter>

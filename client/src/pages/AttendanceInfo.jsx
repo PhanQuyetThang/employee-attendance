@@ -58,18 +58,18 @@ export default function AttendanceDetail() {
     const handleEventClick = (info) => {
         // Xử lý khi người dùng nhấp vào một sự kiện
         console.log('Event click', info.event);
-        // Hiển thị thông tin chi tiết sự kiện (ví dụ: modal)
+        alert("hi")
     };
 
     return (
         <Fragment>
             <div className="max-w-sm mx-auto mt-32 z-50"></div >
-            <div className='w-1/6 float-left mt-2 ml-2 flex' >
-                <button className="bg-gray-700 w-1/2 py-2 ml-20 shadow-xl rounded-lg text-white hover:bg-black duration-500" onClick={() => navigate('/manage')}>
+            <div className='w-1/6 float-left mt-8 flex' >
+                <button className="bg-gray-700 w-1/2 py-2 ml-8 shadow-xl rounded-lg text-white hover:bg-black duration-500" onClick={() => navigate('/manage')}>
                     Go Back
                 </button>
             </div>
-            <div className='w-2/3 float-left ml-2 mr-2'>
+            <div className='w-3/4 float-left'>
 
 
                 <div className="max-w-screen-lg mx-auto mt-8">
