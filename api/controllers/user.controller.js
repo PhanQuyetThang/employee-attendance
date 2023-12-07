@@ -211,3 +211,17 @@ export const Search = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getBiometric = async (req, res, next) => {
+    try {
+        if (!req.params.id) {
+            throw errorHandler(402, "User not found!");
+        }
+        const userID = req.params.id;
+        const user = await User.findOne({ userID: userID });
+        const { password, ...rest } = user._doc;
+        res.status(200).json(rest)
+    } catch (error) {
+        next(error);
+    }
+}

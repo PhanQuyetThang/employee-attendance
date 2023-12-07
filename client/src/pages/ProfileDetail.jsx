@@ -16,6 +16,8 @@ const ProfileDetail = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({})
     const [updateSuccess, setUpdateSuccess] = useState(false)
+    const [fingerprint, setFingerPrint] = useState(null);
+    const [card, setCard] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -31,6 +33,34 @@ const ProfileDetail = () => {
                 }
 
                 setUser(data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchUserData();
+    }, [userId, navigate]);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch(`/api/user/get-biometric/${userId.id}`);
+                const data = await response.json();
+
+                if (!response.ok || data.success === false) {
+                    // Xử lý khi có lỗi hoặc user không tồn tại
+                    console.error(data.message || 'User not found');
+                    // Redirect về trang trước đó nếu có lỗi hoặc user không tồn tại
+                    return;
+                }
+
+                setFingerPrint(data.biometrics);
+                setCard(data.biometrics)
+                console.log(typeof fingerprint);
+                if (!fingerprint) {
+                    console.log("Check biooooo: ", fingerprint)
+                }
+
             } catch (error) {
                 console.error(error);
             }
@@ -168,18 +198,33 @@ const ProfileDetail = () => {
 
                             <div className='mt-4'>
                                 <tr class="flex flex-col dark:bg-gray-800 dark:border-gray-700">
-                                    <th className='text-sm ml-1 mb-1 text-violet-900'>Username</th>
-                                    <td scope="row" class="px-6 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
+                                    <th className='text-sm mx-2 text-violet-900'>Username</th>
+                                    <td scope="row" class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
                                         {user.username}
                                     </td>
-                                    <th className='text-sm ml-1 mb-1 text-violet-900'>Email</th>
-                                    <td class="px-6 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
+                                    <th className='text-sm mx-2 text-violet-900'>Email</th>
+                                    <td class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
                                         {user.email}
                                     </td>
-                                    <th className='text-sm ml-1 mb-1 text-violet-900'>Role</th>
-                                    <input onChange={handleChange} defaultValue={user.role} class="px-6 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
+                                    <th className='text-sm mx-2 text-violet-900'>Role</th>
+                                    <td class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">{user.role}</td>
+                                    <th className='text-sm mx-2 text-violet-900'>Fingerprint</th>
+                                    {fingerprint && fingerprint.length > 0 ? (
+                                        // Nếu fingerprint tồn tại và có dữ liệu, hiển thị nội dung tương ứng
+                                        <td className="px-2 py-2 border-1 border-green-600 bg-green-100 mb-2 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
+                                    ) : (
+                                        // Ngược lại, hiển thị chuỗi "Chưa có"
+                                        <td className="px-2 py-2 border-1 border-red-600 bg-red-100 mb-2 rounded font-medium text-sm text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
+                                    )}
 
-                                    </input>
+                                    <th className='text-sm mx-2 text-violet-900'>RFID</th>
+                                    {card && card.length > 0 ? (
+                                        // Nếu card tồn tại và có dữ liệu, hiển thị nội dung tương ứng
+                                        <td className="px-2 py-2 border-1 border-green-600 bg-green-100 mb-2 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
+                                    ) : (
+                                        // Ngược lại, hiển thị chuỗi "Chưa có"
+                                        <td className="px-2 py-2 border-1 border-red-600 bg-red-100 mb-2 rounded font-medium text-sm text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
+                                    )}
                                 </tr>
                             </div>
                         </div>
