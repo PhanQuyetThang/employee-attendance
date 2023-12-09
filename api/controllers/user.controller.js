@@ -166,6 +166,73 @@ export const saveBiometric = async (req, res, next) => {
     }
 };
 
+export const updateBiometric = async (req, res, next) => {
+    try {
+        const { userId, biometricData } = req.body;
+        const user = await User.findOne({ userID: userId });
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Tìm kiếm biometric có cùng method để cập nhật hoặc tạo mới nếu không tồn tại
+        const existingBiometricIndex = user.biometrics.findIndex(bio => bio.method === biometricData.method);
+
+        if (existingBiometricIndex !== -1) {
+            // Nếu biometric đã tồn tại, cập nhật dữ liệu
+            user.biometrics[existingBiometricIndex].data = biometricData.data;
+        } else {
+            // Nếu biometric chưa tồn tại, thêm mới vào mảng biometrics của user
+            user.biometrics.push({
+                method: biometricData.method,
+                data: biometricData.data
+            });
+        }
+        await user.save();
+        const { password, ...rest } = user._doc;
+        res.status(200).json({ rest, message: 'Biometric data updated successfully', user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const deleteBiometric = async (req, res, next) => {
+    try {
+        const { userId, methodToDelete } = req.body;
+
+        // Tìm kiếm người dùng trong cơ sở dữ liệu với userID
+        const user = await User.findOne({ userID: userId });
+
+        // Kiểm tra xem user có tồn tại không
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Tìm kiếm biometric có cùng method để xóa
+        const biometricIndexToDelete = user.biometrics.findIndex(bio => bio.method === methodToDelete);
+
+        if (biometricIndexToDelete !== -1) {
+            // Nếu biometric tồn tại, xóa khỏi mảng biometrics của user
+            user.biometrics.splice(biometricIndexToDelete, 1);
+
+            // Lưu cập nhật vào cơ sở dữ liệu
+            await user.save();
+
+            // Loại bỏ trường password trước khi trả về dữ liệu
+            const { password, ...rest } = user._doc;
+
+            // Gửi phản hồi về client với thông tin user đã được cập nhật
+            res.status(200).json({ rest, message: 'Biometric data deleted successfully', user });
+        } else {
+            // Nếu biometric không tồn tại, trả về thông báo
+            res.status(404).json({ message: 'Biometric not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 // Hàm kiểm tra vân tay
 export const checkFingerprint = async (req, res, next) => {
     try {
