@@ -2,7 +2,6 @@ import User from "../models/user.model.js"
 import TimeInLog from "../models/timeInLogs.model.js";
 import TimeOutLog from '../models/timeOutLog.model.js'
 import { startOfDay, endOfDay } from 'date-fns';
-import { customAlphabet } from 'nanoid';
 import moment from 'moment-timezone';
 import { errorHandler } from "../utils/error.js"
 import bcryptjs from 'bcryptjs'
@@ -240,14 +239,19 @@ export const deleteBiometric = async (req, res, next) => {
     }
 };
 
+// Hàm tạo chuỗi ngẫu nhiên với ký tự số và độ dài 6
+function generateUniqueAttendanceId() {
+    let result = '';
+    const characters = '0123456789';
+    const length = 6;
 
-// Khởi tạo hàm tạo chuỗi ngẫu nhiên với ký tự số và độ dài 6
-const generateUniqueId = customAlphabet('1234567890', 6);
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters.charAt(randomIndex);
+    }
 
-// Hàm tạo chuỗi duy nhất
-const generateUniqueAttendanceId = () => {
-    return generateUniqueId();
-};
+    return result;
+}
 
 export const checkAttendance = async (req, res, next) => {
     try {
