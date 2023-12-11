@@ -1,4 +1,9 @@
 import User from "../models/user.model.js"
+import TimeInLog from "../models/timeInLogs.model.js";
+import TimeOutLog from '../models/timeOutLog.model.js'
+import { startOfDay, endOfDay } from 'date-fns';
+import { customAlphabet } from 'nanoid';
+import moment from 'moment-timezone';
 import { errorHandler } from "../utils/error.js"
 import bcryptjs from 'bcryptjs'
 import fuzzy from 'fuzzy';
@@ -138,33 +143,36 @@ export const saveBiometricData = async (req, res, next) => {
 export const saveBiometric = async (req, res, next) => {
     try {
         const { userId, biometricData } = req.body;
-
-        // Tìm kiếm người dùng trong cơ sở dữ liệu với userID
         const user = await User.findOne({ userID: userId });
 
-        // Kiểm tra xem user có tồn tại không
         if (!user) {
             throw new Error("User not found");
         }
 
-        // Thêm biometricData vào mảng biometrics của user
-        user.biometrics.push({
-            method: biometricData.method,
-            data: biometricData.data
-        });
+        // Tìm kiếm biometric có cùng method để cập nhật hoặc tạo mới nếu không tồn tại
+        const existingBiometricIndex = user.biometrics.findIndex(bio => bio.method === biometricData.method);
+
+        if (existingBiometricIndex !== -1) {
+            // Nếu biometric đã tồn tại, cập nhật dữ liệu
+            user.biometrics[existingBiometricIndex].data = biometricData.data;
+        } else {
+            // Nếu biometric chưa tồn tại, thêm mới vào mảng biometrics của user
+            user.biometrics.push({
+                method: biometricData.method,
+                data: biometricData.data
+            });
+        }
 
         // Lưu cập nhật vào cơ sở dữ liệu
         await user.save();
 
-        // Loại bỏ trường password trước khi trả về dữ liệu
         const { password, ...rest } = user._doc;
-
-        // Gửi phản hồi về client với thông tin user đã được cập nhật
         res.status(200).json({ rest, message: 'Biometric data saved successfully', user });
     } catch (error) {
         next(error);
     }
 };
+
 
 export const updateBiometric = async (req, res, next) => {
     try {
@@ -233,36 +241,103 @@ export const deleteBiometric = async (req, res, next) => {
 };
 
 
-// Hàm kiểm tra vân tay
-export const checkFingerprint = async (req, res, next) => {
-    try {
-        const { userId, fingerprintData } = req.body;
+// Khởi tạo hàm tạo chuỗi ngẫu nhiên với ký tự số và độ dài 6
+const generateUniqueId = customAlphabet('1234567890', 6);
 
-        // Tìm kiếm người dùng trong cơ sở dữ liệu với userID
-        const user = await User.findOne({ userID: userId });
+// Hàm tạo chuỗi duy nhất
+const generateUniqueAttendanceId = () => {
+    return generateUniqueId();
+};
+
+export const checkAttendance = async (req, res, next) => {
+    try {
+        const { biometricData } = req.body;
+
+        // Lấy thông tin người dùng dựa trên biometricData
+        const user = await User.findOne({
+            'biometrics.method': 'fingerprint',
+            'biometrics.data': biometricData.data,
+        });
 
         // Kiểm tra xem user có tồn tại không
         if (!user) {
             throw new Error("User not found");
         }
 
+        // Lấy thông tin username và userID từ user
+        const { username, userID } = user;
+
+        // Kiểm tra xem đã có bản ghi trong ngày chưa
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
+        const existingLog = await TimeInLog.findOne({
+            userID,
+            TimeIn: { $gte: todayStart, $lt: todayEnd },
+        });
+
+        // Nếu đã có bản ghi trong ngày, không thêm mới
+        if (existingLog) {
+            return res.status(200).json({ isMatch: false, username, userID, message: "Đã chấm công trong ngày" });
+        }
+
         // Lấy ra mảng biometrics của người dùng
-        const userBiometrics = user.biometrics;
+        const userBiometrics = user.biometrics || [];
 
         // So sánh dữ liệu vân tay mới với dữ liệu trong mảng biometrics
         const matchingBiometric = userBiometrics.find((biometric) =>
-            biometric.data.includes(fingerprintData)
+            biometric.data === biometricData.data && biometric.method === 'fingerprint'
         );
 
         // Kết quả của quá trình kiểm tra
         const isMatch = !!matchingBiometric;
 
-        // Gửi phản hồi về client với kết quả kiểm tra
-        res.status(200).json({ isMatch });
+        // Thêm mới bản ghi nếu chưa có trong ngày
+        if (isMatch) {
+            const attendanceId = generateUniqueAttendanceId();
+
+            const timeInUTC = new Date();
+            const timeInLocal = moment(timeInUTC).tz('Asia/Ho_Chi_Minh').format("YYYY-MM-DD HH:mm:ss");
+
+            const timeInLog = new TimeInLog({
+                attendanceId,
+                userID: userID,
+                username: username,
+                BiometricMethod: matchingBiometric.method,
+                TimeIn: timeInLocal,
+                status: "Chấm công thành công",
+            });
+
+            await timeInLog.save();
+        }
+
+        // Gửi phản hồi về client với kết quả kiểm tra và thông tin username và userID
+        res.status(200).json({ isMatch, username, userID });
     } catch (error) {
         next(error);
     }
 };
+
+
+export const getAttendanceInfo = async (req, res, next) => {
+    try {
+        if (!req.params.id) {
+            throw errorHandler(402, "User not found!")
+        }
+
+        const userID = req.params.id;
+        const attendanceInfo = await TimeInLog.findOne({ userID: userID });
+
+        if (!attendanceInfo) {
+            return res.status(404).json({ error: "Không tìm thấy thông tin chấm công cho người dùng." });
+        }
+
+        res.status(200).json(attendanceInfo);
+    } catch (error) {
+        // Xử lý lỗi sử dụng middleware next hoặc gửi phản hồi lỗi
+        next(error);
+    }
+};
+
 
 
 export const Search = async (req, res, next) => {
@@ -278,17 +353,3 @@ export const Search = async (req, res, next) => {
         next(error);
     }
 };
-
-export const getBiometric = async (req, res, next) => {
-    try {
-        if (!req.params.id) {
-            throw errorHandler(402, "User not found!");
-        }
-        const userID = req.params.id;
-        const user = await User.findOne({ userID: userID });
-        const { password, ...rest } = user._doc;
-        res.status(200).json(rest)
-    } catch (error) {
-        next(error);
-    }
-}

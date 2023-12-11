@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux"
@@ -20,7 +21,7 @@ const ProfileDetail = () => {
     const [formData, setFormData] = useState({})
     const [updateSuccess, setUpdateSuccess] = useState(false)
     const [fingerprint, setFingerPrint] = useState(null);
-    const [card, setCard] = useState(null);
+    const [rfid, setRfid] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -36,6 +37,7 @@ const ProfileDetail = () => {
                 }
 
                 setUser(data);
+                console.log(user)
             } catch (error) {
                 console.error(error);
             }
@@ -47,7 +49,7 @@ const ProfileDetail = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`/api/user/get-biometric/${userId.id}`);
+                const response = await fetch(`/api/user/profile-detail/${userId.id}`);
                 const data = await response.json();
 
                 if (!response.ok || data.success === false) {
@@ -57,12 +59,19 @@ const ProfileDetail = () => {
                     return;
                 }
 
-                setFingerPrint(data.biometrics);
-                setCard(data.biometrics)
-                console.log(typeof fingerprint);
-                if (!fingerprint) {
-                    console.log("Check biooooo: ", fingerprint)
-                }
+                // Phân loại biometrics theo method và lưu vào state
+                const biometricsByMethod = data.biometrics.reduce((acc, biometric) => {
+                    const { method } = biometric;
+                    // Kiểm tra xem mảng cho method đã tồn tại chưa, nếu chưa thì tạo mới
+                    acc[method] = acc[method] || [];
+                    // Thêm biometric vào mảng tương ứng với method
+                    acc[method].push(biometric);
+                    return acc;
+                }, {});
+
+                // Lưu biometrics vào state tương ứng
+                setFingerPrint(biometricsByMethod.fingerprint || []);
+                setRfid(biometricsByMethod.RFID || []);
 
             } catch (error) {
                 console.error(error);
@@ -107,8 +116,10 @@ const ProfileDetail = () => {
 
     const handleGetFingerprint = async (userId) => {
         try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
+            const esp32Endpoint = 'http://192.168.43.182'; // Địa chỉ IP của ESP32
+            const response = await axios.post(`${esp32Endpoint}/biometric`, {
+                userId: userId
+            }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -119,30 +130,12 @@ const ProfileDetail = () => {
                 return;
             }
 
-            const biometricData = response.data;
-
-            // Now, send the biometric data to your server for saving
-            const saveBiometricResponse = await axios.post('/api/user/save-biometric', {
-                userId,
-                biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!saveBiometricResponse.status === 200) {
-                console.error(`Failed to save biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
-            }
+            // Khi có response từ ESP32, không làm gì cả với dữ liệu vân tay ở đây
         } catch (error) {
             console.error('An unexpected error occurred:', error);
         }
     };
+
 
     const handleUpdateFingerprint = async (userId) => {
         try {
@@ -224,14 +217,10 @@ const ProfileDetail = () => {
 
     const handleGetRFID = async (userId) => {
         try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const esp32Endpoint = 'http://192.168.43.182'; // Địa chỉ IP của ESP32
+            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`);
 
-            if (!response.status === 200) {
+            if (response.status !== 200) {
                 console.error(`Request to ESP32 failed with status: ${response.status}`);
                 return;
             }
@@ -242,13 +231,9 @@ const ProfileDetail = () => {
             const saveBiometricResponse = await axios.post('/api/user/save-biometric', {
                 userId,
                 biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
             });
 
-            if (!saveBiometricResponse.status === 200) {
+            if (saveBiometricResponse.status !== 200) {
                 console.error(`Failed to save biometric data with status: ${saveBiometricResponse.status}`);
                 // Handle the error as needed
             } else {
@@ -260,6 +245,7 @@ const ProfileDetail = () => {
             console.error('An unexpected error occurred:', error);
         }
     };
+
 
     const handleUpdateRFID = async (userId) => {
         try {
@@ -409,14 +395,14 @@ const ProfileDetail = () => {
                                 {fingerprint && fingerprint.length > 0 ? (
                                     // Nếu fingerprint tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
-                                        <td className="w-1/3 py-2 border-1 border-green-600 bg-green-100 mb-2 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
+                                        <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
                                         <Link onClick={() => handleUpdateFingerprint(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 w-16 justify-center ml-2 flex rounded-md text-center text-white bg-yellow-600 hover:bg-yellow-900 hover:scale-105 duration-500'>
-                                                <span>Update</span>
+                                            <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
+                                                Update
                                             </button>
                                         </Link>
-                                        <Link onClick={() => handleDeleteFingerprint(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 w-16 justify-center ml-2 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
+                                        <Link onClick={() => handleDeleteFingerprint(user.userID)} className='flex self-center items-center text-center'>
+                                            <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
                                                 <span>Delete</span>
                                             </button>
                                         </Link>
@@ -425,8 +411,8 @@ const ProfileDetail = () => {
                                     // Ngược lại, hiển thị chuỗi "Chưa có"
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
-                                        <Link onClick={() => handleGetFingerprint(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 h-9 w-12 justify-center items-center ml-4 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
+                                        <Link onClick={() => handleGetFingerprint(user.userID)} className='flex self-center items-center text-center'>
+                                            <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>
                                         </Link>
@@ -437,17 +423,17 @@ const ProfileDetail = () => {
                                     <FaIdCard className='w-6 h-6 text-gray-500' />
                                     <th className='text-sm mx-2 text-violet-900'>RFID</th>
                                 </div>
-                                {card && card.length > 0 ? (
+                                {rfid && rfid.length > 0 ? (
                                     // Nếu card tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
-                                        <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
+                                        <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-left text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
                                         <Link onClick={() => handleUpdateRFID(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 h-9 w-12 justify-center items-center ml-4 flex rounded-md text-center text-white bg-yellow-600 hover:bg-yellow-900 hover:scale-105 duration-500'>
+                                            <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 Update
                                             </button>
                                         </Link>
                                         <Link onClick={() => handleDeleteRFID(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 h-9 w-12 justify-center items-center ml-4 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
+                                            <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
                                                 Delete
                                             </button>
                                         </Link>
@@ -457,7 +443,7 @@ const ProfileDetail = () => {
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
                                         <Link onClick={() => handleGetRFID(user.userID)} className='flex self-center text-center'>
-                                            <button className='p-2 h-9 w-12 justify-center items-center ml-4 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
+                                            <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>
                                         </Link>
