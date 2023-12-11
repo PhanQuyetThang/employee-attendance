@@ -19,10 +19,6 @@ mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology:
 
 const app = express();
 
-const esp32IP = 'your-esp32-ip-address'; // Replace with your ESP32's IP address
-const esp32Port = 80; // Replace with the port your ESP32 is running on
-const esp32Endpoint = '/example-endpoint'; // Replace with the desired endpoint on your ESP32
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -39,34 +35,6 @@ app.use(express.static(path.join(__dirname, 'client', 'dist')));
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
-});
-
-app.get('/send-request', (req, res) => {
-    const options = {
-        hostname: esp32IP,
-        port: esp32Port,
-        path: esp32Endpoint,
-        method: 'GET',
-    };
-
-    const httpRequest = http.request(options, (httpResponse) => {
-        let data = '';
-
-        httpResponse.on('data', (chunk) => {
-            data += chunk;
-        });
-
-        httpResponse.on('end', () => {
-            res.status(200).json({ response: data });
-        });
-    });
-
-    httpRequest.on('error', (error) => {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
-    });
-
-    httpRequest.end();
 });
 
 app.use((error, req, res, next) => {
