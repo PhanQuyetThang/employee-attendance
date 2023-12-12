@@ -357,3 +357,28 @@ export const Search = async (req, res, next) => {
         next(error);
     }
 };
+
+let currentUserId = null;
+
+export const saveCurrentUserID = (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        currentUserId = userId;
+        res.json({ userId: currentUserId, message: 'UserID updated successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getBiometric = (req, res, next) => {
+    try {
+        const userId = currentUserId;
+        if (!userId) {
+            return res.status(404).json({ error: 'UserID not found' });
+        }
+        currentUserId = null;
+        res.json({ userId });
+    } catch (error) {
+        next(error);
+    }
+}

@@ -23,6 +23,8 @@ const ProfileDetail = () => {
     const [fingerprint, setFingerPrint] = useState(null);
     const [rfid, setRfid] = useState(null);
 
+
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -35,29 +37,7 @@ const ProfileDetail = () => {
                     // Redirect về trang trước đó nếu có lỗi hoặc user không tồn tại
                     return;
                 }
-
                 setUser(data);
-                console.log(user)
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        fetchUserData();
-    }, [userId, navigate]);
-
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch(`/api/user/profile-detail/${userId.id}`);
-                const data = await response.json();
-
-                if (!response.ok || data.success === false) {
-                    // Xử lý khi có lỗi hoặc user không tồn tại
-                    console.error(data.message || 'User not found');
-                    // Redirect về trang trước đó nếu có lỗi hoặc user không tồn tại
-                    return;
-                }
 
                 // Phân loại biometrics theo method và lưu vào state
                 const biometricsByMethod = data.biometrics.reduce((acc, biometric) => {
@@ -78,8 +58,9 @@ const ProfileDetail = () => {
             }
         };
 
+        // Gọi hàm fetchUserData khi userId.id thay đổi hoặc component được mount
         fetchUserData();
-    }, [userId, navigate]);
+    }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
 
     if (!user) {
         return <div>Loading...</div>;
@@ -116,65 +97,25 @@ const ProfileDetail = () => {
 
     const handleGetFingerprint = async (userId) => {
         try {
-            const esp32Endpoint = 'http://192.168.43.182'; // Địa chỉ IP của ESP32
-            const response = await axios.post(`${esp32Endpoint}/biometric`, {
-                userId: userId
-            }, {
+            const response = await fetch(`/api/user/current-userid/${userId}`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
-            if (!response.status === 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
+            if (!response.ok) {
+                throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
             }
 
-            // Khi có response từ ESP32, không làm gì cả với dữ liệu vân tay ở đây
+            const data = await response.json();
+            console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
+
         } catch (error) {
-            console.error('An unexpected error occurred:', error);
+            console.error('Lỗi:', error);
         }
     };
 
-
-    const handleUpdateFingerprint = async (userId) => {
-        try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.status === 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
-            }
-
-            const biometricData = response.data;
-
-            // Now, send the biometric data to your server for updating
-            const saveBiometricResponse = await axios.post('/api/user/update-biometric', {
-                userId,
-                biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!saveBiometricResponse.status === 200) {
-                console.error(`Failed to update biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
-            }
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
-    };
 
     const handleDeleteFingerprint = async (userId) => {
         try {
@@ -204,77 +145,6 @@ const ProfileDetail = () => {
 
             if (!saveBiometricResponse.status === 200) {
                 console.error(`Failed to delete biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
-            }
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
-    };
-
-    const handleGetRFID = async (userId) => {
-        try {
-            const esp32Endpoint = 'http://192.168.43.182'; // Địa chỉ IP của ESP32
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`);
-
-            if (response.status !== 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
-            }
-
-            const biometricData = response.data;
-
-            // Now, send the biometric data to your server for saving
-            const saveBiometricResponse = await axios.post('/api/user/save-biometric', {
-                userId,
-                biometricData,
-            });
-
-            if (saveBiometricResponse.status !== 200) {
-                console.error(`Failed to save biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
-            }
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
-    };
-
-
-    const handleUpdateRFID = async (userId) => {
-        try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.status === 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
-            }
-
-            const biometricData = response.data;
-
-            // Now, send the biometric data to your server for updating
-            const saveBiometricResponse = await axios.post('/api/user/update-biometric', {
-                userId,
-                biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!saveBiometricResponse.status === 200) {
-                console.error(`Failed to update biometric data with status: ${saveBiometricResponse.status}`);
                 // Handle the error as needed
             } else {
                 const saveBiometricResult = saveBiometricResponse.data;
@@ -324,7 +194,6 @@ const ProfileDetail = () => {
             console.error('An unexpected error occurred:', error);
         }
     };
-
 
     return (
         <>
