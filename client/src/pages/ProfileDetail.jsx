@@ -95,7 +95,7 @@ const ProfileDetail = () => {
         }
     }
 
-    const handleGetFingerprint = async (userId) => {
+    const handleGetBiometric = async (userId) => {
         try {
             const response = await fetch(`/api/user/current-userid/${userId}`, {
                 method: 'POST',
@@ -116,84 +116,50 @@ const ProfileDetail = () => {
         }
     };
 
-
-    const handleDeleteFingerprint = async (userId) => {
+    const handleUpdateBiometric = async (userId) => {
         try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
+            const response = await fetch(`/api/user/current-userid/${userId}`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
-            if (!response.status === 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
+            if (!response.ok) {
+                throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
             }
 
-            const biometricData = response.data;
+            const data = await response.json();
+            console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
 
-            // Now, send the biometric data to your server for deleting
-            const saveBiometricResponse = await axios.post('/api/user/delete-biometric', {
-                userId,
-                biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!saveBiometricResponse.status === 200) {
-                console.error(`Failed to delete biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
-            }
         } catch (error) {
-            console.error('An unexpected error occurred:', error);
+            console.error('Lỗi:', error);
         }
     };
 
-    const handleDeleteRFID = async (userId) => {
+    const handleDeleteBiometric = async ({ userId, method }) => {
         try {
-            const esp32Endpoint = 'your-esp32-endpoint';
-            const response = await axios.get(`${esp32Endpoint}/biometric/${userId}`, {
+            const response = await fetch(`/api/user/delete-biometric/${userId}`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ userId, method }),
             });
 
-            if (!response.status === 200) {
-                console.error(`Request to ESP32 failed with status: ${response.status}`);
-                return;
-            }
-
-            const biometricData = response.data;
-
-            // Now, send the biometric data to your server for deleting
-            const saveBiometricResponse = await axios.post('/api/user/delete-biometric', {
-                userId,
-                biometricData,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!saveBiometricResponse.status === 200) {
-                console.error(`Failed to delete biometric data with status: ${saveBiometricResponse.status}`);
-                // Handle the error as needed
-            } else {
-                const saveBiometricResult = saveBiometricResponse.data;
-                console.log('Response from server:', saveBiometricResult);
-                // Handle the success or further logic
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Response:", data);
+                // Đưa ra quyết định xử lý dữ liệu phản hồi tại đâ            } else {
+                console.error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
             }
         } catch (error) {
-            console.error('An unexpected error occurred:', error);
+            console.error('Lỗi:', error);
         }
     };
+
+
+
 
     return (
         <>
@@ -265,12 +231,12 @@ const ProfileDetail = () => {
                                     // Nếu fingerprint tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
-                                        <Link onClick={() => handleUpdateFingerprint(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleUpdateBiometric(user.userID)} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 Update
                                             </button>
                                         </Link>
-                                        <Link onClick={() => handleDeleteFingerprint(user.userID)} className='flex self-center items-center text-center'>
+                                        <Link onClick={() => handleDeleteBiometric({ userId: user.userID, method: 'fingerprint' })} className='flex self-center items-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
                                                 <span>Delete</span>
                                             </button>
@@ -280,7 +246,7 @@ const ProfileDetail = () => {
                                     // Ngược lại, hiển thị chuỗi "Chưa có"
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
-                                        <Link onClick={() => handleGetFingerprint(user.userID)} className='flex self-center items-center text-center'>
+                                        <Link onClick={() => handleGetBiometric(user.userID)} className='flex self-center items-center text-center'>
                                             <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>
@@ -296,12 +262,12 @@ const ProfileDetail = () => {
                                     // Nếu card tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-left text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
-                                        <Link onClick={() => handleUpdateRFID(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleUpdateBiometric(user.userID)} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 Update
                                             </button>
                                         </Link>
-                                        <Link onClick={() => handleDeleteRFID(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleDeleteBiometric({ userId: user.userID, method: 'RFID' })} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-red-600 hover:bg-red-900 hover:scale-105 duration-500'>
                                                 Delete
                                             </button>
@@ -311,7 +277,7 @@ const ProfileDetail = () => {
                                     // Ngược lại, hiển thị chuỗi "Chưa có dữ liệu"
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
-                                        <Link onClick={() => handleGetRFID(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleGetBiometric(user.userID)} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>

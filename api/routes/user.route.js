@@ -1,5 +1,5 @@
 import express from "express";
-import { deleteUser, test, updateUser, getUser, amountUser, ProfileDetail, AttendanceDetail, saveBiometricData, saveBiometric, testApi, Search, updateBiometric, deleteBiometric, checkAttendance, getAttendanceInfo, getBiometric, saveCurrentUserID } from "../controllers/user.controller.js";
+import { deleteUser, test, updateUser, getUser, amountUser, ProfileDetail, AttendanceDetail, saveBiometricData, saveBiometric, testApi, Search, deleteBiometric, checkAttendance, getAttendanceInfo, getBiometric, saveCurrentUserID } from "../controllers/user.controller.js";
 import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
@@ -17,8 +17,8 @@ router.post('/current-userid/:id', saveCurrentUserID)
 router.get('/get-biometric', getBiometric)
 router.post('/save-biometric-data', verifyToken, saveBiometricData);
 router.get('/save-biometric/:id', saveBiometric)
-router.get('/update-biometric/:id', updateBiometric)
-router.get('/delete-biometric/:id', deleteBiometric)
+router.get('/update-biometric/:id', saveBiometric)
+router.delete('/delete-biometric/:id', deleteBiometric)
 router.get('/check-fingerprint', checkAttendance);
 
 
