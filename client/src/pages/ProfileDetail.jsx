@@ -95,13 +95,14 @@ const ProfileDetail = () => {
         }
     }
 
-    const handleGetBiometric = async (userId) => {
+    const handleGetBiometric = async ({ userId, method }) => {
         try {
             const response = await fetch(`/api/user/current-userid/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ userId, method }),
             });
 
             if (!response.ok) {
@@ -123,6 +124,7 @@ const ProfileDetail = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ userId, method }),
             });
 
             if (!response.ok) {
@@ -231,7 +233,7 @@ const ProfileDetail = () => {
                                     // Nếu fingerprint tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
-                                        <Link onClick={() => handleUpdateBiometric(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleGetBiometric({ userId: user.userID, method: 'fingerprint' })} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 Update
                                             </button>
@@ -246,7 +248,7 @@ const ProfileDetail = () => {
                                     // Ngược lại, hiển thị chuỗi "Chưa có"
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
-                                        <Link onClick={() => handleGetBiometric(user.userID)} className='flex self-center items-center text-center'>
+                                        <Link onClick={() => handleGetBiometric({ userId: user.userID, method: 'fingerprint' })} className='flex self-center items-center text-center'>
                                             <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>
@@ -262,7 +264,7 @@ const ProfileDetail = () => {
                                     // Nếu card tồn tại và có dữ liệu, hiển thị nội dung tương ứng
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-green-600 bg-green-100 rounded font-medium text-sm text-left text-green-600 whitespace-nowrap dark:text-white">Đã có dữ liệu</td>
-                                        <Link onClick={() => handleUpdateBiometric(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleGetBiometric({ userId: user.userID, method: 'RFID' })} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-16 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 Update
                                             </button>
@@ -277,7 +279,7 @@ const ProfileDetail = () => {
                                     // Ngược lại, hiển thị chuỗi "Chưa có dữ liệu"
                                     <div className='flex flex-row items-center'>
                                         <td className="w-1/2 px-2 py-2 border-1 border-red-600 bg-red-100 rounded font-medium text-sm text-left text-red-600 whitespace-nowrap dark:text-white">Chưa có dữ liệu</td>
-                                        <Link onClick={() => handleGetBiometric(user.userID)} className='flex self-center text-center'>
+                                        <Link onClick={() => handleGetBiometric({ userId: user.userID, method: 'RFID' })} className='flex self-center text-center'>
                                             <button className='p-2 h-9 w-12 justify-center items-center ml-2 flex rounded-md text-center text-white bg-green-600 hover:bg-green-900 hover:scale-105 duration-500'>
                                                 <FaPlus />
                                             </button>

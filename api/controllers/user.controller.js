@@ -329,27 +329,42 @@ export const Search = async (req, res, next) => {
 };
 
 let currentUserId = null;
+let currentMethod = null;
+let isDataAvailable = false;
 
-//Get userID from UI
+// Get userID from UI
 export const saveCurrentUserID = (req, res, next) => {
     try {
         const userId = req.params.id;
+        const method = req.body.method;
         currentUserId = userId;
-        res.json({ userId: currentUserId, message: 'UserID updated successfully' });
+        currentMethod = method;
+        isDataAvailable = true;
+
+        res.json({ userId: currentUserId, method: currentMethod, message: 'UserID updated successfully' });
     } catch (error) {
         next(error);
     }
 };
 
+// GetBiometric API Route for ESP32
 export const getBiometric = (req, res, next) => {
     try {
-        const userId = currentUserId;
-        if (!userId) {
-            return res.status(404).json({ error: 'UserID not found' });
+        if (!isDataAvailable) {
+            return res.status(404).json({ error: 'Data not available yet' });
         }
-        currentUserId = null; // Đặt trước khi gửi phản hồi
-        res.json({ userId });
+
+        const userId = currentUserId;
+        const method = currentMethod;
+
+        // Reset data and flag after sending the response
+        res.json({ userId, method });
+        currentUserId = null;
+        currentMethod = null;
+        isDataAvailable = false;
     } catch (error) {
         next(error);
     }
-}
+};
+
+
