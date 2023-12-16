@@ -229,7 +229,7 @@ export const checkAttendance = async (req, res, next) => {
 
         // Lấy thông tin người dùng dựa trên biometricData
         const user = await User.findOne({
-            'biometrics.method': 'fingerprint',
+            'biometrics.method': biometricData.method,
             'biometrics.data': biometricData.data,
         });
 

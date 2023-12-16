@@ -13,6 +13,13 @@ export default function AttendanceDetail() {
     const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
     const [attendanceData, setAttendanceData] = useState([]);
+    const [data, setData] = useState([
+        {
+            title: '',
+            start: '', // Thay thế bằng thuộc tính thực tế trong dữ liệu của bạn
+            end: '',
+        },
+    ]);
     const navigate = useNavigate();
     const userId = useParams();
 
@@ -35,69 +42,45 @@ export default function AttendanceDetail() {
             }
         };
 
-        const convertAttendanceToEvent = (attendanceItem) => {
-            // Chuyển đổi thời gian sang múi giờ +7 (Asia/Ho_Chi_Minh)
-            const convertedTime = moment.tz(attendanceItem.TimeIn, 'Asia/Ho_Chi_Minh').format();
-
-            return {
-                title: attendanceItem.status,
-                start: convertedTime,
-                // Các thuộc tính khác của sự kiện
-            };
-        };
-
         const fetchAttendanceData = async () => {
             try {
                 const response = await fetch(`/api/user/get-attendance-info/${userId.id}`);
-                const data = await response.json();
+                const responseData = await response.json();
 
                 if (response.ok) {
-                    if (data.success !== false) {
-                        // Chuyển đổi thời gian trong dữ liệu chấm công sang múi giờ +7
-                        const attendanceDataWithTimeZone = data.map((item) => ({
-                            ...item,
-                            TimeIn: moment.tz(item.TimeIn, 'Asia/Ho_Chi_Minh').format(),
-                        }));
+                    if (responseData.success !== false) {
+                        console.log('hddh: ', responseData);
 
-                        setAttendanceData(attendanceDataWithTimeZone);
+                        // Truyền giá trị từ responseData.TimeIn vào start trong mảng data
+                        const formattedData = [
+                            {
+                                title: '',
+                                start: responseData.TimeIn,
+                                end: responseData.TimeIn,
+                            },
+                        ];
 
-                        // Chuyển đổi dữ liệu chấm công thành sự kiện và cập nhật mảng sự kiện
-                        const attendanceEvents = attendanceDataWithTimeZone.map(convertAttendanceToEvent);
-                        setEvents(attendanceEvents);
+                        // Sử dụng formattedData cho FullCalendar
+                        setData(formattedData);
                     } else {
-                        console.error(data.message || 'Error fetching attendance data');
-                        setError(data.message || 'Error fetching attendance data');
+                        console.error(responseData.message || 'Lỗi khi lấy dữ liệu chấm công');
+                        // Nếu có lỗi, giữ nguyên data hiện tại
                     }
                 } else {
-                    console.error('Error fetching attendance data');
-                    setError('Error fetching attendance data');
+                    console.error('Lỗi khi lấy dữ liệu chấm công');
+                    // Nếu có lỗi, giữ nguyên data hiện tại
                 }
             } catch (error) {
                 console.error(error);
-                setError('Error fetching attendance data');
+                // Nếu có lỗi, giữ nguyên data hiện tại
             }
         };
+
+
 
         fetchUserData();
         fetchAttendanceData();
     }, [userId]);
-
-    useEffect(() => {
-        console.log(attendanceData);
-    }, [attendanceData]);
-
-    // Chuyển đổi thời gian trong mảng sự kiện
-    const eventsWithTimeZone = events.map((event) => ({
-        ...event,
-        start: moment.tz(event.start, 'Asia/Ho_Chi_Minh').format(),
-    }));
-
-    // const dayHeaderContent = (arg) => {
-    //     // Hiển thị thời gian trực tiếp trên ô lịch ngày
-    //     const date = new Date(arg.date);
-    //     const timeString = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-    //     return `<span>${timeString}</span>`;
-    // };
 
     const handleEventClick = (info) => {
         // Xử lý khi người dùng nhấp vào một sự kiện
@@ -124,7 +107,7 @@ export default function AttendanceDetail() {
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         initialView="dayGridMonth"
-                        events={eventsWithTimeZone} // Sử dụng mảng đã chuyển đổi
+                        events={data}
                         eventClick={handleEventClick}
                         headerToolbar={{
                             start: 'today prev,next',
