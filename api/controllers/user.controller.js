@@ -141,7 +141,7 @@ export const saveBiometricData = async (req, res, next) => {
 
 export const saveBiometric = async (req, res, next) => {
     try {
-        const { userId, biometricData } = req.body;
+        const { userId, method, data } = req.body;
         const user = await User.findOne({ userID: userId });
 
         if (!user) {
@@ -149,16 +149,16 @@ export const saveBiometric = async (req, res, next) => {
         }
 
         // Tìm kiếm biometric có cùng method để cập nhật hoặc tạo mới nếu không tồn tại
-        const existingBiometricIndex = user.biometrics.findIndex(bio => bio.method === biometricData.method);
+        const existingBiometricIndex = user.biometrics.findIndex(bio => bio.method === method);
 
         if (existingBiometricIndex !== -1) {
             // Nếu biometric đã tồn tại, cập nhật dữ liệu
-            user.biometrics[existingBiometricIndex].data = biometricData.data;
+            user.biometrics[existingBiometricIndex].data = data;
         } else {
             // Nếu biometric chưa tồn tại, thêm mới vào mảng biometrics của user
             user.biometrics.push({
-                method: biometricData.method,
-                data: biometricData.data
+                method: method,
+                data: data
             });
         }
 
@@ -225,12 +225,12 @@ function generateUniqueAttendanceId() {
 
 export const checkAttendance = async (req, res, next) => {
     try {
-        const { biometricData } = req.body;
+        const { method, data } = req.body;
 
         // Lấy thông tin người dùng dựa trên biometricData
         const user = await User.findOne({
-            'biometrics.method': biometricData.method,
-            'biometrics.data': biometricData.data,
+            'biometrics.method': method,
+            'biometrics.data': data,
         });
 
         // Kiểm tra xem user có tồn tại không
