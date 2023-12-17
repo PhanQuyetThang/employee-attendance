@@ -16,10 +16,10 @@ router.get('/attendance-detail/:id', verifyToken, AttendanceDetail)
 router.post('/current-userid/:id', saveCurrentUserID)
 router.get('/get-biometric', getBiometric)
 router.post('/save-biometric-data', verifyToken, saveBiometricData);
-router.get('/save-biometric/:id', saveBiometric)
+router.post('/save-biometric/:id', saveBiometric)
 router.get('/update-biometric/:id', saveBiometric)
 router.delete('/delete-biometric/:id', deleteBiometric)
-router.get('/check-fingerprint', checkAttendance);
+router.get('/check-attendance', checkAttendance);
 
 
 router.get('/get-attendance-info/:id', getAttendanceInfo)

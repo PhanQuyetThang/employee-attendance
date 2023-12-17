@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
     userID: {
         type: String,
         required: true,
-        unique: true,
     },
     BiometricMethod: {
         type: String,

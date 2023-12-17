@@ -244,52 +244,72 @@ export const checkAttendance = async (req, res, next) => {
         // Kiểm tra xem đã có bản ghi trong ngày chưa
         const todayStart = startOfDay(new Date());
         const todayEnd = endOfDay(new Date());
-        const existingLog = await TimeInLog.findOne({
+        const existingTimeInLog = await TimeInLog.findOne({
             userID,
             TimeIn: { $gte: todayStart, $lt: todayEnd },
         });
 
-        // Nếu đã có bản ghi trong ngày, không thêm mới
-        if (existingLog) {
-            return res.status(200).json({ isMatch: false, username, userID, message: "Đã chấm công trong ngày" });
-        }
+        // Nếu đã có bản ghi chấm công trong ngày, thực hiện chấm công tan làm
+        if (existingTimeInLog) {
+            const timeOutUTC = new Date();
+            const timeOutLocal = moment(timeOutUTC).tz('Asia/Ho_Chi_Minh').format("YYYY-MM-DD HH:mm:ss");
 
-        // Lấy ra mảng biometrics của người dùng
-        const userBiometrics = user.biometrics || [];
-
-        // So sánh dữ liệu vân tay mới với dữ liệu trong mảng biometrics
-        const matchingBiometric = userBiometrics.find((biometric) =>
-            biometric.data === biometricData.data && biometric.method === 'fingerprint'
-        );
-
-        // Kết quả của quá trình kiểm tra
-        const isMatch = !!matchingBiometric;
-
-        // Thêm mới bản ghi nếu chưa có trong ngày
-        if (isMatch) {
-            const attendanceId = generateUniqueAttendanceId();
-
-            const timeInUTC = new Date();
-            const timeInLocal = moment(timeInUTC).tz('Asia/Ho_Chi_Minh').format("YYYY-MM-DD HH:mm:ss");
-
-            const timeInLog = new TimeInLog({
-                attendanceId,
-                userID: userID,
-                username: username,
-                BiometricMethod: matchingBiometric.method,
-                TimeIn: timeInLocal,
-                status: "Chấm công thành công",
+            const timeOutLog = new TimeOutLog({
+                attendanceId: generateUniqueAttendanceId(),
+                userID,
+                username,
+                BiometricMethod: existingTimeInLog.BiometricMethod, // Sử dụng thông tin từ bản ghi TimeInLog
+                TimeOut: timeOutLocal,
+                status: "Chấm công tan làm",
             });
 
-            await timeInLog.save();
-        }
+            await timeOutLog.save();
 
-        // Gửi phản hồi về client với kết quả kiểm tra và thông tin username và userID
-        res.status(200).json({ isMatch, username, userID });
+            // Gửi phản hồi về client với kết quả kiểm tra và thông tin username và userID
+            res.status(200).json({ isMatch: true, username, userID, message: "Chấm công tan làm thành công" });
+        } else {
+            // Lấy ra mảng biometrics của người dùng
+            const userBiometrics = user.biometrics || [];
+
+            // So sánh dữ liệu vân tay mới với dữ liệu trong mảng biometrics
+            const matchingBiometric = userBiometrics.find((biometric) =>
+                biometric.data === biometricData.data && biometric.method === 'fingerprint'
+            );
+
+            // Kết quả của quá trình kiểm tra
+            const isMatch = !!matchingBiometric;
+
+            // Thêm mới bản ghi chấm công vào làm nếu chưa có trong ngày
+            if (isMatch) {
+                const attendanceId = generateUniqueAttendanceId();
+
+                const timeInUTC = new Date();
+                const timeInLocal = moment(timeInUTC).tz('Asia/Ho_Chi_Minh').format("YYYY-MM-DD HH:mm:ss");
+
+                const timeInLog = new TimeInLog({
+                    attendanceId,
+                    userID,
+                    username,
+                    BiometricMethod: matchingBiometric.method,
+                    TimeIn: timeInLocal,
+                    status: "Chấm công vào làm",
+                });
+
+                await timeInLog.save();
+
+                // Gửi phản hồi về client với kết quả kiểm tra và thông tin username và userID
+                res.status(200).json({ isMatch: true, username, userID, message: "Chấm công vào làm thành công" });
+            } else {
+                // Gửi phản hồi về client nếu không tìm thấy dữ liệu phù hợp
+                res.status(200).json({ isMatch: false, username, userID, message: "Không tìm thấy dữ liệu phù hợp" });
+            }
+        }
     } catch (error) {
         next(error);
     }
 };
+
+
 
 
 export const getAttendanceInfo = async (req, res, next) => {
