@@ -17,9 +17,15 @@ export default function AttendanceDetail() {
         {
             title: '',
             start: '', // Thay thế bằng thuộc tính thực tế trong dữ liệu của bạn
-            end: '',
+            end: '',   // Thay thế bằng thuộc tính thực tế trong dữ liệu của bạn
+        },
+        {
+            title: '',
+            start: '', // Thay thế bằng thuộc tính thực tế trong dữ liệu của bạn
+            end: '',   // Thay thế bằng thuộc tính thực tế trong dữ liệu của bạn
         },
     ]);
+
     const navigate = useNavigate();
     const userId = useParams();
 
@@ -51,17 +57,35 @@ export default function AttendanceDetail() {
                     if (responseData.success !== false) {
                         console.log('hddh: ', responseData);
 
-                        // Truyền giá trị từ responseData.TimeIn vào start trong mảng data
-                        const formattedData = [
-                            {
-                                title: '',
-                                start: responseData.TimeIn,
-                                end: responseData.TimeIn,
-                            },
-                        ];
+                        // Tạo mảng events với dữ liệu chấm công vào làm và tan làm (nếu có)
+                        const events = [];
 
-                        // Sử dụng formattedData cho FullCalendar
-                        setData(formattedData);
+                        if (responseData.attendanceIn) {
+                            const timeIn = new Date(responseData.attendanceIn.TimeIn);
+                            const isLate = timeIn.getHours() > 8;
+
+                            events.push({
+                                title: isLate ? 'Trễ' : 'Chấm công vào làm',
+                                start: responseData.attendanceIn.TimeIn,
+                                end: responseData.attendanceIn.TimeIn, // Thay đổi nếu cần
+                                color: isLate ? 'red' : 'green', // Màu sắc cho sự kiện chấm công vào làm
+                            });
+                        }
+
+                        if (responseData.attendanceOut) {
+                            const timeOut = new Date(responseData.attendanceOut.TimeOut);
+                            const isEarly = timeOut.getHours() < 17;
+
+                            events.push({
+                                title: isEarly ? 'Sớm' : 'Chấm công tan làm',
+                                start: responseData.attendanceOut.TimeOut,
+                                end: responseData.attendanceOut.TimeOut, // Thay đổi nếu cần
+                                color: isEarly ? 'red' : 'green', // Màu sắc cho sự kiện chấm công tan làm
+                            });
+                        }
+
+                        // Sử dụng events cho FullCalendar
+                        setData(events);
                     } else {
                         console.error(responseData.message || 'Lỗi khi lấy dữ liệu chấm công');
                         // Nếu có lỗi, giữ nguyên data hiện tại
@@ -75,6 +99,12 @@ export default function AttendanceDetail() {
                 // Nếu có lỗi, giữ nguyên data hiện tại
             }
         };
+
+
+
+
+
+
 
 
 
@@ -106,9 +136,8 @@ export default function AttendanceDetail() {
                 <div className="max-w-screen-lg mx-auto mt-8">
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
+                        initialView="timeGridWeek" // Chọn chế độ xem theo tuần với giờ
                         events={data}
-                        eventClick={handleEventClick}
                         headerToolbar={{
                             start: 'today prev,next',
                             center: 'title',
@@ -129,7 +158,6 @@ export default function AttendanceDetail() {
                         eventTextColor="#fff"
                         height="auto"
                         className="bg-white rounded-lg shadow-md p-4"
-                    // dayHeaderContent={dayHeaderContent}
                     />
                 </div>
             </div>

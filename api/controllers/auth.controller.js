@@ -21,36 +21,29 @@ import jwt from 'jsonwebtoken';
 //     }
 // };
 
-const generateRandomUserID = () => {
-    const min = 100000;
-    const max = 999999;
 
-    // Tạo một số ngẫu nhiên từ 100000 đến 999999 (bao gồm 6 chữ số)
-    const randomUserID = Math.floor(Math.random() * (max - min + 1)) + min;
-
-    // Chuyển số ngẫu nhiên thành chuỗi
-    const userID = randomUserID.toString();
-
-    return userID;
-};
 
 export const signup = async (req, res, next) => {
     const { username, email, password, phonenumber, department } = req.body;
     const hashedPassword = bcryptjs.hashSync(password, 10);
 
-    // Tạo userID với 6 chữ số ngẫu nhiên
-    const userID = generateRandomUserID();
-
-    // Chọn những trường dữ liệu cần thiết và thêm trường userId
-    const newUser = new User({ userID, username, email, password: hashedPassword, phonenumber, department });
-
     try {
+        // Tìm userID lớn nhất trong bảng User
+        const maxUserIDRecord = await User.findOne({}, { userID: 1 }).sort({ userID: -1 });
+
+        // Tạo userID lớn hơn 1 và lớn hơn userID lớn nhất hiện tại
+        const userID = maxUserIDRecord ? maxUserIDRecord.userID + 1 : 1;
+
+        // Chọn những trường dữ liệu cần thiết và thêm trường userId
+        const newUser = new User({ userID, username, email, password: hashedPassword, phonenumber, department });
+
         await newUser.save();
         res.status(201).json("User created successfully!");
     } catch (error) {
         next(error);
     }
 };
+
 
 
 export const signin = async (req, res, next) => {
@@ -82,9 +75,13 @@ export const google = async (req, res, next) => {
         } else {
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
             const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
-            const generatedUserId = Math.floor(100000 + Math.random() * 900000); // Tạo số ngẫu nhiên từ 100000 đến 999999;
+
+            // Tạo userID lớn hơn 1
+            const maxUserID = await User.findOne().sort({ userID: -1 });
+            const nextUserID = maxUserID ? maxUserID.userID + 1 : 1;
+
             const newUser = new User({
-                userID: generatedUserId,
+                userID: nextUserID,
                 username: req.body.name,
                 email: req.body.email,
                 password: hashedPassword,
@@ -100,6 +97,7 @@ export const google = async (req, res, next) => {
         next(error);
     }
 };
+
 
 export const signout = async (req, res, next) => {
     try {
