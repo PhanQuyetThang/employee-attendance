@@ -25,6 +25,7 @@ export default function Header() {
 
     const handleShowSignOutConfirmation = () => {
         setShowSignOutConfirmation(!showSignOutConfirmation);
+        setFunctionForm(!functionForm)
     }
 
     const handleHideSignOutConfirmation = () => {
@@ -46,8 +47,9 @@ export default function Header() {
                 return;
             }
             dispatch(signOutUserSuccess(data));
-            navigate('/');
             setShowSignOutConfirmation(!showSignOutConfirmation);
+            navigate('/');
+
         } catch (error) {
             dispatch(signOutUserFailure(data.message));
         }

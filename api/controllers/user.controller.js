@@ -133,17 +133,6 @@ export const AttendanceDetail = async (req, res, next) => {
     }
 };
 
-export const saveBiometricData = async (req, res, next) => {
-    const { userID, method, data } = req.body;
-
-    try {
-        const user = await User.saveBiometricData(userID, method, data);
-        res.status(200).json({ success: true, message: 'Biometric data saved successfully', user });
-    } catch (error) {
-        next(error)
-    }
-};
-
 export const saveBiometric = async (req, res, next) => {
     try {
         const { userId, method, data } = req.body;
@@ -171,23 +160,78 @@ export const saveBiometric = async (req, res, next) => {
     }
 };
 
-export const deleteBiometric = async (req, res, next) => {
+// export const deleteBiometric = async (req, res, next) => {
+//     try {
+//         const { userId, method } = req.body;
+//         const user = await User.findOne({ userID: userId });
+//         if (!user) {
+//             throw new Error("User not found");
+//         }
+//         const biometricIndexToDelete = user.biometrics.findIndex(bio => bio.method === method);
+
+//         ESPToDeleteBiometric(biometricIndexToDelete)
+
+//         if (biometricIndexToDelete !== -1) {
+//             user.biometrics.splice(biometricIndexToDelete, 1);
+//             await user.save();
+//             const { password, ...rest } = user._doc;
+//             res.status(200).json({ rest, message: 'Biometric data deleted successfully', user });
+//         } else {
+//             res.status(404).json({ message: 'Biometric not found' });
+//         }
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+let currentDataToDelete = null;
+let isDataAvailableToDelete = false;
+
+export const ESPToDeleteBiometric = async (req, res, next) => {
     try {
         const { userId, method } = req.body;
         const user = await User.findOne({ userID: userId });
+
         if (!user) {
             throw new Error("User not found");
         }
+
         const biometricIndexToDelete = user.biometrics.findIndex(bio => bio.method === method);
 
         if (biometricIndexToDelete !== -1) {
-            user.biometrics.splice(biometricIndexToDelete, 1);
-            await user.save();
-            const { password, ...rest } = user._doc;
-            res.status(200).json({ rest, message: 'Biometric data deleted successfully', user });
+            const deletedBiometric = user.biometrics[biometricIndexToDelete];
+
+            // Update MongoDB document to remove the biometric
+            await User.updateOne(
+                { userID: userId },
+                { $pull: { biometrics: { method: method } } }
+            );
+
+            currentDataToDelete = deletedBiometric;
+            isDataAvailableToDelete = true;
+            res.json({ data: currentDataToDelete, message: 'Data to delete updated successfully' });
         } else {
             res.status(404).json({ message: 'Biometric not found' });
         }
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
+// deleteBiometric API Route for ESP32
+export const deleteBiometricESP = (req, res, next) => {
+    try {
+        if (!isDataAvailableToDelete) {
+            return res.status(404).json({ error: 'Data not available yet' });
+        }
+
+        const data = currentDataToDelete;
+
+        // Reset data and flag after sending the response
+        res.json(data);
+        currentDataToDelete = null;
+        isDataAvailableToDelete = false;
     } catch (error) {
         next(error);
     }
@@ -322,10 +366,14 @@ export const getAttendanceInfo = async (req, res, next) => {
         }
 
         const userID = req.params.id;
-        const attendanceInInfo = await TimeInLog.findOne({ userID: userID });
-        const attendanceOutInfo = await TimeOutLog.findOne({ userID: userID });
 
-        if (!attendanceInInfo && !attendanceOutInfo) {
+        // Sử dụng find để lấy tất cả các bản ghi từ cả hai bảng
+        const [attendanceInInfo, attendanceOutInfo] = await Promise.all([
+            TimeInLog.find({ userID: userID }),
+            TimeOutLog.find({ userID: userID }),
+        ]);
+
+        if (!attendanceInInfo.length && !attendanceOutInfo.length) {
             return res.status(404).json({ error: "Không tìm thấy thông tin chấm công cho người dùng." });
         }
 

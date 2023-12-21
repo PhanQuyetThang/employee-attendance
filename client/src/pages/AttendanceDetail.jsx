@@ -60,27 +60,33 @@ export default function AttendanceDetail() {
                         // Tạo mảng events với dữ liệu chấm công vào làm và tan làm (nếu có)
                         const events = [];
 
+                        // Xử lý sự kiện chấm công vào làm
                         if (responseData.attendanceIn) {
-                            const timeIn = new Date(responseData.attendanceIn.TimeIn);
-                            const isLate = timeIn.getHours() > 8;
+                            responseData.attendanceIn.forEach((attendanceInEvent) => {
+                                const timeIn = new Date(attendanceInEvent.TimeIn);
+                                const isLate = timeIn.getHours() > 8;
 
-                            events.push({
-                                title: isLate ? 'Trễ' : 'Chấm công vào làm',
-                                start: responseData.attendanceIn.TimeIn,
-                                end: responseData.attendanceIn.TimeIn, // Thay đổi nếu cần
-                                color: isLate ? 'red' : 'green', // Màu sắc cho sự kiện chấm công vào làm
+                                events.push({
+                                    title: isLate ? 'Trễ' : 'Chấm công vào làm',
+                                    start: attendanceInEvent.TimeIn,
+                                    end: attendanceInEvent.TimeIn, // Thay đổi nếu cần
+                                    color: isLate ? 'red' : 'green', // Màu sắc cho sự kiện chấm công vào làm
+                                });
                             });
                         }
 
+                        // Xử lý sự kiện chấm công tan làm
                         if (responseData.attendanceOut) {
-                            const timeOut = new Date(responseData.attendanceOut.TimeOut);
-                            const isEarly = timeOut.getHours() < 17;
+                            responseData.attendanceOut.forEach((attendanceOutEvent) => {
+                                const timeOut = new Date(attendanceOutEvent.TimeOut);
+                                const isEarly = timeOut.getHours() < 17;
 
-                            events.push({
-                                title: isEarly ? 'Sớm' : 'Chấm công tan làm',
-                                start: responseData.attendanceOut.TimeOut,
-                                end: responseData.attendanceOut.TimeOut, // Thay đổi nếu cần
-                                color: isEarly ? 'red' : 'green', // Màu sắc cho sự kiện chấm công tan làm
+                                events.push({
+                                    title: isEarly ? 'Sớm' : 'Chấm công tan làm',
+                                    start: attendanceOutEvent.TimeOut,
+                                    end: attendanceOutEvent.TimeOut, // Thay đổi nếu cần
+                                    color: isEarly ? 'red' : 'green', // Màu sắc cho sự kiện chấm công tan làm
+                                });
                             });
                         }
 
@@ -99,6 +105,8 @@ export default function AttendanceDetail() {
                 // Nếu có lỗi, giữ nguyên data hiện tại
             }
         };
+
+
 
 
 

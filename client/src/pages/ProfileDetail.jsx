@@ -137,38 +137,54 @@ const ProfileDetail = () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
+                throw new Error(`Request failed with status code: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
+            console.log("Response: ", data); // You can handle the response data here
 
-        } catch (error) {
-            console.error('Lỗi:', error);
-        }
-    };
-
-    const handleUpdateBiometric = async (userId) => {
-        try {
-            const response = await fetch(`/api/user/current-userid/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+            // Use toast.success for a success message
+            toast.success('Request successful!', {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 1000,
+                onClose: () => {
+                    // Reload the page after closing the toast
+                    window.location.reload();
                 },
-                body: JSON.stringify({ userId, method }),
             });
 
-            if (!response.ok) {
-                throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
-
         } catch (error) {
-            console.error('Lỗi:', error);
+            console.error('Error:', error);
+            // Use toast.error for an error message
+            toast.error('An error occurred while fetching biometric data.', {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 1000,
+            });
         }
     };
+
+
+    // const handleUpdateBiometric = async (userId) => {
+    //     try {
+    //         const response = await fetch(`/api/user/current-userid/${userId}`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ userId, method }),
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
+    //         }
+
+    //         const data = await response.json();
+    //         console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
+
+    //     } catch (error) {
+    //         console.error('Lỗi:', error);
+    //     }
+    // };
 
     const handleDeleteBiometric = async ({ userId, method }) => {
         try {
@@ -185,15 +201,34 @@ const ProfileDetail = () => {
                 // Use toast.success for a success message
                 toast.success('Delete successfully!', {
                     position: toast.POSITION.TOP_RIGHT,
-                    autoClose: 3000,
+                    autoClose: 1000,
+                    onClose: () => {
+                        console.log("Response:", data);
+                        // Reload the page after a successful delete
+                        window.location.reload();
+                    },
                 });
-                console.log("Response:", data);
-                console.error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
+            } else {
+                // Handle non-ok response (e.g., show an error message)
+                const errorData = await response.json();
+                console.error('Delete failed:', errorData.message);
+                toast.error(`Delete failed: ${errorData.message}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 1000,
+                });
             }
         } catch (error) {
-            console.error('Lỗi:', error);
+            // Handle fetch error
+            console.error('Fetch error:', error);
+            toast.error('An error occurred while deleting biometric data.', {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 1000,
+            });
         }
     };
+    ``
+
+
 
     return (
         <>
