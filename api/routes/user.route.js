@@ -20,7 +20,7 @@ router.post('/save-biometric/:id', saveBiometric)
 router.get('/update-biometric/:id', saveBiometric)
 router.delete('/delete-biometric/:id', ESPToDeleteBiometric)
 router.get('/get-delete-data', deleteBiometricESP)
-router.get('/check-attendance', checkAttendance);
+router.post('/check-attendance', checkAttendance);
 
 
 router.get('/get-attendance-info/:id', getAttendanceInfo)
