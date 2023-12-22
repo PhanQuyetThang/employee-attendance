@@ -96,10 +96,24 @@ export const getUser = async (req, res, next) => {
 
 export const amountUser = async (req, res, next) => {
     try {
-        const users = await User.find();
-        const userCount = users.length;
+        // Lấy ra ngày hiện tại
+        const currentDate = new Date();
 
-        res.json({ totalUsers: userCount });
+        // Đặt thời điểm bắt đầu của ngày
+        const startOfDayDate = startOfDay(currentDate);
+
+        // Đặt thời điểm cuối của ngày
+        const endOfDayDate = endOfDay(currentDate);
+
+        // Truy vấn để đếm số lượng userID không trùng nhau trong ngày trong bảng TimeInLogs
+        const uniqueUserCount = await TimeInLog.countDocuments({
+            createdAt: { $gte: startOfDayDate, $lt: endOfDayDate }
+        });
+
+        // Truy vấn để đếm tổng số lượng người dùng trong bảng Users
+        const totalUserCount = await User.countDocuments();
+
+        res.json({ totalUsers: totalUserCount, uniqueUsersToday: uniqueUserCount });
     } catch (error) {
         next(error);
     }

@@ -24,6 +24,7 @@ export default function Manage() {
     const { currentUser, loading, error } = useSelector(state => state.user);
     const [users, setUsers] = useState([]);
     const [amountUser, setAmountUser] = useState(0)
+    const [usersToday, setUsersToday] = useState(0)
     const [formData, setFormData] = useState({})
     const [password, setPassword] = useState({})
     const [dates, setDates] = useState([])
@@ -44,7 +45,8 @@ export default function Manage() {
         fetch('/api/user/amount-user')
             .then((response) => response.json())
             .then((data) => {
-                setAmountUser(data);
+                setAmountUser(data.totalUsers);
+                setUsersToday(data.uniqueUsersToday)
                 console.log('Data from API:', data);
             })
             .catch((error) => console.error(error));
@@ -141,15 +143,15 @@ export default function Manage() {
                 <div className='text-center w-full'>
                     <h1 className='font-semibold flex p-3 text-3xl font-sans text-slate-500'>Overview</h1>
                     <div className='flex items-center ml-5'>
-                        <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
+                        {/* <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
                         <RangePicker className='flex ml-4 p-2 rounded-lg hover:border-violet-500 duration-500'
                             onChange={(values) => {
                                 setDates(values.map(item => {
                                     return moment(item).format('DD-MM-YYYY')
                                 }))
                             }}
-                        />
-                        <h2 className='flex float-left font-semibold text-lg text-slate-500 ml-3'>Search:</h2>
+                        /> */}
+                        <h2 className='flex float-left font-semibold text-lg text-slate-500'>Search:</h2>
                         <form className='flex flex-row bg-white rounded-full p-1 ml-4 border-gray-300 border-1 hover:border-violet-500 duration-500'>
                             <input type="text" onChange={handleChange} id='userID' placeholder='employee id...' className='flex ml-4 p-1 bg-transparent rounded-lg outline-none  hover:border-violet-500 duration-500 ' />
                             <Link to={`/employee-info/${formData.userID}`} className='flex self-center text-center'>
@@ -163,19 +165,16 @@ export default function Manage() {
                         <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500 flex-col'>
                             <span className='flex font-sans font-semibold ml-3 mt-2 float-left'>
                                 <BiSolidUser className='mr-2 flex justify-center items-center my-auto' />
-                                User Amount
+                                Total Users
                             </span>
-                            <span className=' flex font-semibold font-sans text-4xl float-left ml-10 mt-2'>{amountUser.totalUsers}</span>
+                            <span className=' flex font-semibold font-sans text-4xl float-left ml-10 mt-2'>{amountUser}</span>
                         </div>
                         <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500 flex-col'>
                             <span className='flex font-sans font-semibold ml-3 mt-2 float-left'>
                                 <BiSolidUser className='mr-2 flex justify-center items-center my-auto' />
-                                Current User
+                                Current Users
                             </span>
-                            <span className=' flex font-semibold font-sans text-4xl float-left ml-8 mt-2'>{amountUser.totalUsers}</span>
-                        </div>
-                        <div className='w-1/5 h-full bg-violet-600 text-white shadow-2xl flex rounded-2xl hover:bg-violet-800 duration-500'>
-                            <span className='flex font-sans font-semibold m-3 float-left'>Attandance Amount</span>
+                            <span className=' flex font-semibold font-sans text-4xl float-left ml-8 mt-2'>{usersToday}</span>
                         </div>
                     </div>
                     {deleteConfirmation && (
