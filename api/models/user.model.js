@@ -9,7 +9,7 @@ const BiometricSchema = new mongoose.Schema({
 // Định nghĩa mô hình Users
 const userSchema = new mongoose.Schema({
     userID: { type: Number, unique: true },
-    username: { type: String, required: true, unique: true },
+    username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phonenumber: { type: String },
