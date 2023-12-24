@@ -52,13 +52,17 @@ export default function SignUp() {
                 <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
                     <div className='mr-20 ml-20 flex flex-col bg-slate-50 bg-opacity-40 backdrop-filter backdrop-blur-2xl rounded shadow-lg mt-3 z-50'>
                         <h1 className="text-2xl mt-3 font-semibold text-center text-violet-700">Register</h1>
-                        <div className='flex flex-col float-left justify-center my-3 ml-10 mr-10 text-sm text-slate-500 sm:flex hover:text-violet-500 hover:text-lg duration-500 sm:justify-between sm:gap-2'>
-                            <span className='flex float-left ml-1 hover:text-violet-500'>Email</span>
-                            <input type="text" onChange={handleChange} id='email' placeholder='email...' className='border-1 border-violet-400 rounded-xl bg-transparent pl-2 p-2 hover:border-violet-600 hover:text-violet-500 hover:text-sm hover:border-2 duration-500' />
+                        <div className='flex flex-col float-left justify-center my-3 ml-10 mr-10 text-sm text-slate-500 sm:flex hover:text-violet-500 duration-500 sm:justify-between sm:gap-2'>
+                            <span className='flex float-left ml-1 hover:text-violet-500'>Username</span>
+                            <input type="text" onChange={handleChange} id='username' placeholder='username...' className='border-1 border-violet-400 rounded-xl bg-transparent pl-2 p-2 hover:border-violet-600 hover:text-violet-500 hover:border-2 duration-500' />
                         </div>
-                        <div className='flex flex-col float-left justify-center ml-10 mr-10 text-sm text-slate-500 sm:flex hover:text-violet-500 hover:text-lg duration-500 sm:justify-between sm:gap-2'>
+                        <div className='flex flex-col float-left justify-center my-3 ml-10 mr-10 text-sm text-slate-500 sm:flex hover:text-violet-500 duration-500 sm:justify-between sm:gap-2'>
+                            <span className='flex float-left ml-1 hover:text-violet-500'>Email</span>
+                            <input type="text" onChange={handleChange} id='email' placeholder='email...' className='border-1 border-violet-400 rounded-xl bg-transparent pl-2 p-2 hover:border-violet-600 hover:text-violet-500 =hover:border-2 duration-500' />
+                        </div>
+                        <div className='flex flex-col float-left justify-center ml-10 mr-10 text-sm text-slate-500 sm:flex hover:text-violet-500 duration-500 sm:justify-between sm:gap-2'>
                             <span className='flex float-left ml-1 hover:text-violet-500'>Password</span>
-                            <input type="password" onChange={handleChange} id='password' placeholder='password...' className='border-1 border-violet-400 rounded-xl bg-transparent pl-2 p-2 hover:border-violet-600 hover:text-violet-500 hover:text-sm hover:border-2 duration-500' />
+                            <input type="password" onChange={handleChange} id='password' placeholder='password...' className='border-1 border-violet-400 rounded-xl bg-transparent pl-2 p-2 hover:border-violet-600 hover:text-violet-500 =hover:border-2 duration-500' />
                         </div>
                         {/* <div className='flex flex-col float-left justify-center mt-2 w-1/2 mx-auto text-sm text-slate-500  ml-2 mr-2 sm:flex  sm:justify-between sm:gap-2'>
                         <span className='ml-1 text-slate-600 font-semibold hover:text-violet-800 duartion-500'>Forget Password?</span>
