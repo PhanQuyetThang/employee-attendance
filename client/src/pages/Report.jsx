@@ -18,8 +18,8 @@ export default function Report() {
     const navigate = useNavigate(); // Sử dụng hook useNavigate để chuyển hướng
     const { currentUser } = useSelector(state => state.user);
     const [users, setUsers] = useState([]);
-    const [userCheckIn, setUserCheckIn] = useState(0);
-    const [userCheckOut, setUserCheckOut] = useState(0);
+    const [userCheckIn, setUserCheckIn] = useState([]);
+    const [userCheckOut, setUserCheckOut] = useState([]);
     const [amountUser, setAmountUser] = useState(0)
     const [formData, setFormData] = useState(false);
     const [dateRange, setDateRange] = useState([]);
@@ -44,7 +44,9 @@ export default function Report() {
                 setUsers(data.users)
                 setUserCheckIn(data.userCheckIn);
                 setUserCheckOut(data.userCheckOut)
+                console.log("check users: ", users);
                 console.log("check users: ", userCheckIn);
+                console.log("check users: ", userCheckOut);
             })
             .catch((error) => console.error(error));
     }, []);
@@ -62,36 +64,6 @@ export default function Report() {
             })
             .catch((error) => console.error(error));
     }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
-
-    // const handleClickProfile = async (userId) => {
-    //     try {
-    //         const response = await fetch(`/api/user/profile-detail/${userId}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         });
-
-    //         // Kiểm tra status code
-    //         if (!response.ok) {
-    //             console.error(`Request failed with status: ${response.status}`);
-    //             return;
-    //         }
-
-    //         // Lấy dữ liệu từ response
-    //         const { success, message, data } = await response.json();
-
-    //         if (!success) {
-    //             console.error(`API Error: ${message}`);
-    //             return;
-    //         }
-
-    //         // Chuyển hướng sang trang ProfileDetail với thông tin người dùng
-    //         navigate(`/`);
-    //     } catch (error) {
-    //         console.error('An unexpected error occurred:', error);
-    //     }
-    // };
 
     return (
         <div className="flex mx-auto mt-16 justify-between gap-4">
@@ -166,10 +138,35 @@ export default function Report() {
                             </div>
                         </div>
                         {users.map((user) => {
-                            // Tìm bản ghi tương ứng trong userCheckIn dựa trên userID
-                            const userCheckInRecord = userCheckIn.find((record) => record.userID === user.userID);
-                            const userCheckOutRecord = userCheckOut.find((record) => record.userID === user.userID);
+                            // Biến để lưu trữ giá trị TimeIn tìm được từ mảng userCheckIn
+                            let userCheckInTimeIn = "No data!";
+                            let userCheckOutTimeOut = "No data!";
+                            let textColorTimeIn = "text-gray-500"; // Mặc định màu chữ là đỏ
+                            let textColorTimeOut = "text-gray-500"; // Mặc định màu chữ là đỏ
 
+                            // Kiểm tra xem có bất kỳ bản ghi nào trong userCheckIn có userID khớp với userID của user không
+                            const matchingCheckIn = userCheckIn.find((checkIn) => checkIn.userID == user.userID);
+                            const matchingCheckOut = userCheckOut.find((checkOut) => checkOut.userID == user.userID);
+
+                            // Nếu có, gán giá trị TimeIn vào biến userCheckInTimeIn và kiểm tra điều kiện màu chữ
+                            if (matchingCheckIn) {
+                                userCheckInTimeIn = new Date(matchingCheckIn.TimeIn).toLocaleTimeString();
+                                const timeInHour = new Date(matchingCheckIn.TimeIn).getHours();
+                                if (timeInHour > 8) {
+                                    textColorTimeIn = "text-red-700"; // Nếu TimeIn > 8 giờ, đặt màu chữ là đỏ
+                                }
+                            }
+
+                            // Tương tự cho TimeOut
+                            if (matchingCheckOut) {
+                                userCheckOutTimeOut = new Date(matchingCheckOut.TimeOut).toLocaleTimeString();
+                                const timeOutHour = new Date(matchingCheckOut.TimeOut).getHours();
+                                if (timeOutHour < 17) {
+                                    textColorTimeOut = "text-red-700"; // Nếu TimeOut < 5 giờ chiều, đặt màu chữ là xanh
+                                }
+                            }
+
+                            // Hiển thị thông tin user
                             return (
                                 <div key={user.userID} className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-light sm:flex sm:items-center sm:justify-between sm:gap-2'>
                                     <div className='sm:w-1/4 flex float-left'>
@@ -178,17 +175,12 @@ export default function Report() {
                                     <div className='sm:w-1/3 flex float-left'>
                                         <p className='text-center text-gray-700 sm:text-left'>{user.email}</p>
                                     </div>
-                                    <div className='sm:w-1/6 flex float-left'>
-                                        <p className='text-center text-red-700 sm:text-left'>
-                                            {userCheckInRecord ? new Date(userCheckInRecord.TimeIn).toLocaleString() : "No data!"}
-                                        </p>
+                                    <div className={`sm:w-1/6 flex float-left ${textColorTimeIn}`}>
+                                        <p className='text-center sm:text-left'>{userCheckInTimeIn}</p>
                                     </div>
-                                    <div className='sm:w-1/6 flex float-left'>
-                                        <p className='text-center text-red-700 sm:text-left'>
-                                            {userCheckOutRecord ? new Date(userCheckOutRecord.TimeIn).toLocaleString() : "No data!"}
-                                        </p>
+                                    <div className={`sm:w-1/6 flex float-left ${textColorTimeOut}`}>
+                                        <p className='text-center sm:text-left'>{userCheckOutTimeOut}</p>
                                     </div>
-
                                     <div className='sm:w-1/6 flex justify-center'>
                                         <Link to={`/attendance-detail/${user.userID}`} className='flex self-center text-center'>
                                             <button className='p-2 w-8 h-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>

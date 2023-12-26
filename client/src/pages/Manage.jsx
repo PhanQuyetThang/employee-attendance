@@ -37,7 +37,7 @@ export default function Manage() {
         // Thực hiện một HTTP request để lấy danh sách người dùng từ server
         fetch('/api/user/get-user')
             .then((response) => response.json())
-            .then((data) => setUsers(data))
+            .then((data) => setUsers(data.users))
             .catch((error) => console.error(error));
     }, []);
 
