@@ -66,18 +66,12 @@ export const testdelete = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
     try {
-        // Tìm người dùng theo userID và xóa
         const result = await User.deleteOne({ userID: req.params.id });
-
-        // Kiểm tra xem có bản ghi nào bị xóa không
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: "Người dùng không tồn tại." });
         }
-
-        // Gửi phản hồi về phía client
         res.status(200).json({ success: true, message: "Người dùng đã được xóa!" });
     } catch (error) {
-        // Xử lý lỗi và chuyển tiếp cho middleware xử lý lỗi tiếp theo
         next(error);
     }
 };
@@ -85,12 +79,19 @@ export const deleteUser = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
     try {
-        const users = await User.find(); // Lấy danh sách người dùng từ cơ sở dữ liệu
-        // Trả về danh sách người dùng dưới dạng phản hồi JSON
-        res.json(users);
+        const [users, userCheckIn, userCheckOut] = await Promise.all([
+            User.find(),
+            TimeInLog.find(),
+            TimeOutLog.find()
+        ]);
+
+        res.json({
+            users,
+            userCheckIn,
+            userCheckOut
+        });
     } catch (error) {
-        // Xử lý lỗi nếu có
-        next(error); // Gọi middleware tiếp theo hoặc xử lý lỗi nếu cần
+        next(error);
     }
 };
 

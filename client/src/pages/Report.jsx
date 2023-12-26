@@ -18,10 +18,20 @@ export default function Report() {
     const navigate = useNavigate(); // Sử dụng hook useNavigate để chuyển hướng
     const { currentUser } = useSelector(state => state.user);
     const [users, setUsers] = useState([]);
+    const [userCheckIn, setUserCheckIn] = useState(0);
+    const [userCheckOut, setUserCheckOut] = useState(0);
     const [amountUser, setAmountUser] = useState(0)
     const [formData, setFormData] = useState(false);
     const [dateRange, setDateRange] = useState([]);
     const [dates, setDates] = useState([])
+
+    const currentDate = new Date();
+    const day = currentDate.getDate();
+    const month = currentDate.getMonth() + 1; // Tháng bắt đầu từ 0
+    const year = currentDate.getFullYear();
+
+    // Tạo chuỗi ngày tháng năm
+    const formattedDate = `${day}/${month}/${year}`;
 
     console.log(dates)
 
@@ -29,7 +39,13 @@ export default function Report() {
         // Thực hiện một HTTP request để lấy danh sách người dùng từ server
         fetch('/api/user/get-user')
             .then((response) => response.json())
-            .then((data) => setUsers(data))
+            .then((data) => {
+
+                setUsers(data.users)
+                setUserCheckIn(data.userCheckIn);
+                setUserCheckOut(data.userCheckOut)
+                console.log("check users: ", userCheckIn);
+            })
             .catch((error) => console.error(error));
     }, []);
 
@@ -47,35 +63,35 @@ export default function Report() {
             .catch((error) => console.error(error));
     }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
 
-    const handleClickProfile = async (userId) => {
-        try {
-            const response = await fetch(`/api/user/profile-detail/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+    // const handleClickProfile = async (userId) => {
+    //     try {
+    //         const response = await fetch(`/api/user/profile-detail/${userId}`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         });
 
-            // Kiểm tra status code
-            if (!response.ok) {
-                console.error(`Request failed with status: ${response.status}`);
-                return;
-            }
+    //         // Kiểm tra status code
+    //         if (!response.ok) {
+    //             console.error(`Request failed with status: ${response.status}`);
+    //             return;
+    //         }
 
-            // Lấy dữ liệu từ response
-            const { success, message, data } = await response.json();
+    //         // Lấy dữ liệu từ response
+    //         const { success, message, data } = await response.json();
 
-            if (!success) {
-                console.error(`API Error: ${message}`);
-                return;
-            }
+    //         if (!success) {
+    //             console.error(`API Error: ${message}`);
+    //             return;
+    //         }
 
-            // Chuyển hướng sang trang ProfileDetail với thông tin người dùng
-            navigate(`/`);
-        } catch (error) {
-            console.error('An unexpected error occurred:', error);
-        }
-    };
+    //         // Chuyển hướng sang trang ProfileDetail với thông tin người dùng
+    //         navigate(`/`);
+    //     } catch (error) {
+    //         console.error('An unexpected error occurred:', error);
+    //     }
+    // };
 
     return (
         <div className="flex mx-auto mt-16 justify-between gap-4">
@@ -122,35 +138,25 @@ export default function Report() {
 
             <div className="text-center w-5/6 mt-5 flex justify-center">
                 <div className='text-center mt-2 w-full'>
-                    <h1 className='font-bold flex p-3 text-3xl text-gray-500 font-sans'>Report</h1>
+                    <div className='flex flex-col'>
+                        <h1 className='font-bold flex justify-start p-3 text-3xl text-gray-500 font-sans'>Report</h1>
+                        <h1 className='font-semibold border rounded-full w-44 h-12 flex justify-center items-center p-3 ml-2 text-xl text-gray-500 font-sans'>{formattedDate}</h1>
+                    </div>
 
-                    {/* <div className='flex items-center ml-5'>
-                        <h2 className='flex float-left font-semibold text-lg text-slate-500'>Filter by:</h2>
-                        <RangePicker className='flex ml-8 p-2 rounded-lg hover:border-violet-500 duration-500'
-                            onChange={(values) => {
-                                setDates(values.map(item => {
-                                    return moment(item).format('DD-MM-YYYY')
-                                }))
-                            }}
-                        />
-                    </div> */}
 
                     <div className=' m-2'>
                         <h1 className='flex mt-1'></h1>
-                        <div className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-bold mr-2 sm:flex sm:items-center sm:justify-between sm:gap-2'>
+                        <div className='border-1 border-slate-300 bg-gray-200 rounded-lg my-3 p-3 text-lg font-bold sm:flex sm:items-center sm:justify-between sm:gap-2'>
                             <div className='sm:w-1/4 flex float-left'>
                                 <p className='text-center text-gray-500 sm:text-left'>Username</p>
                             </div>
                             <div className='sm:w-1/3 flex float-left'>
                                 <p className='text-center text-gray-500 sm:text-left'>Email</p>
                             </div>
-                            <div className='sm:w-1/5 flex float-left'>
-                                <p className='text-center text-gray-500 sm:text-left'>Department</p>
-                            </div>
-                            <div className='sm:w-1/5 flex float-left'>
+                            <div className='sm:w-1/6 flex float-left'>
                                 <p className='text-center text-gray-500 sm:text-left'>Clock in</p>
                             </div>
-                            <div className='sm:w-1/5 flex float-left'>
+                            <div className='sm:w-1/6 flex float-left'>
                                 <p className='text-center text-gray-500 sm:text-left'>Clock out</p>
                             </div>
                             <div className='w-1/6'>
@@ -159,32 +165,41 @@ export default function Report() {
                                 </p>
                             </div>
                         </div>
-                        {users.map((user) => (
-                            <div className='bg-slate-300 rounded bg-opacity-30 my-3 p-3 mr-2 sm:flex font-light text-md sm:items-center sm:justify-between sm:gap-2'>
-                                <div className='sm:w-1/4 flex flex-row items-center float-left gap-4'>
-                                    <p className='text-center sm:text-left'>{user.username}</p>
+                        {users.map((user) => {
+                            // Tìm bản ghi tương ứng trong userCheckIn dựa trên userID
+                            const userCheckInRecord = userCheckIn.find((record) => record.userID === user.userID);
+                            const userCheckOutRecord = userCheckOut.find((record) => record.userID === user.userID);
+
+                            return (
+                                <div key={user.userID} className='border-1 border-slate-300 rounded-lg my-3 p-3 text-lg font-light sm:flex sm:items-center sm:justify-between sm:gap-2'>
+                                    <div className='sm:w-1/4 flex float-left'>
+                                        <p className='text-center text-gray-700 sm:text-left'>{user.username}</p>
+                                    </div>
+                                    <div className='sm:w-1/3 flex float-left'>
+                                        <p className='text-center text-gray-700 sm:text-left'>{user.email}</p>
+                                    </div>
+                                    <div className='sm:w-1/6 flex float-left'>
+                                        <p className='text-center text-red-700 sm:text-left'>
+                                            {userCheckInRecord ? new Date(userCheckInRecord.TimeIn).toLocaleString() : "No data!"}
+                                        </p>
+                                    </div>
+                                    <div className='sm:w-1/6 flex float-left'>
+                                        <p className='text-center text-red-700 sm:text-left'>
+                                            {userCheckOutRecord ? new Date(userCheckOutRecord.TimeIn).toLocaleString() : "No data!"}
+                                        </p>
+                                    </div>
+
+                                    <div className='sm:w-1/6 flex justify-center'>
+                                        <Link to={`/attendance-detail/${user.userID}`} className='flex self-center text-center'>
+                                            <button className='p-2 w-8 h-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
+                                                <IoIosArrowForward />
+                                            </button>
+                                        </Link>
+                                    </div>
                                 </div>
-                                <div className='sm:w-1/3 flex float-left'>
-                                    <p className='text-center sm:text-left'>{user.email}</p>
-                                </div>
-                                <div className='sm:w-1/5 flex justify-center'>
-                                    <p className='text-center sm:text-left'>{user.department}</p>
-                                </div>
-                                <div className='sm:w-1/5 flex float-left'>
-                                    <p className='text-center sm:text-left'>unknown</p>
-                                </div>
-                                <div className='sm:w-1/5 flex float-left'>
-                                    <p className='text-center sm:text-left'>unknown</p>
-                                </div>
-                                <div className='sm:w-1/5 flex justify-center ml-10'>
-                                    <Link to={`/attendance-detail/${user.userID}`} className='flex self-center text-center'>
-                                        <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-violet-600 hover:bg-violet-900 hover:scale-125 duration-500'>
-                                            <IoIosArrowForward />
-                                        </button>
-                                    </Link>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
+
                     </div>
                 </div>
             </div>
