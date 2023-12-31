@@ -67,7 +67,7 @@ export default function AttendanceDetail() {
                                 const isLate = timeIn.getHours() > 8;
 
                                 events.push({
-                                    title: isLate ? 'Trễ' : 'Chấm công vào làm',
+                                    title: isLate ? 'Trễ' : 'Checkin',
                                     start: attendanceInEvent.TimeIn,
                                     end: attendanceInEvent.TimeIn, // Thay đổi nếu cần
                                     color: isLate ? 'red' : 'green', // Màu sắc cho sự kiện chấm công vào làm
@@ -82,7 +82,7 @@ export default function AttendanceDetail() {
                                 const isEarly = timeOut.getHours() < 17;
 
                                 events.push({
-                                    title: isEarly ? 'Sớm' : 'Chấm công tan làm',
+                                    title: isEarly ? 'Sớm' : 'Checkout',
                                     start: attendanceOutEvent.TimeOut,
                                     end: attendanceOutEvent.TimeOut, // Thay đổi nếu cần
                                     color: isEarly ? 'red' : 'green', // Màu sắc cho sự kiện chấm công tan làm

@@ -10,6 +10,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux"
 
 import { DatePicker } from 'antd';
+// Sử dụng date-fns
+import { isSameDay } from 'date-fns';
 import moment from 'moment'
 
 const { RangePicker } = DatePicker
@@ -139,32 +141,42 @@ export default function Report() {
                         </div>
                         {users.map((user) => {
                             // Biến để lưu trữ giá trị TimeIn tìm được từ mảng userCheckIn
+                            console.log("user: ", user);
                             let userCheckInTimeIn = "No data!";
                             let userCheckOutTimeOut = "No data!";
                             let textColorTimeIn = "text-gray-500"; // Mặc định màu chữ là đỏ
                             let textColorTimeOut = "text-gray-500"; // Mặc định màu chữ là đỏ
 
                             // Kiểm tra xem có bất kỳ bản ghi nào trong userCheckIn có userID khớp với userID của user không
-                            const matchingCheckIn = userCheckIn.find((checkIn) => checkIn.userID == user.userID);
-                            const matchingCheckOut = userCheckOut.find((checkOut) => checkOut.userID == user.userID);
+                            const matchingCheckIn = userCheckIn.filter((checkIn) => checkIn.userID == user.userID);
+                            console.log("matchingCheckIn: ", matchingCheckIn);
+                            const matchingCheckOut = userCheckOut.filter((checkOut) => checkOut.userID == user.userID);
+                            console.log("matchingCheckOut: ", matchingCheckOut);
 
-                            // Nếu có, gán giá trị TimeIn vào biến userCheckInTimeIn và kiểm tra điều kiện màu chữ
-                            if (matchingCheckIn) {
-                                userCheckInTimeIn = new Date(matchingCheckIn.TimeIn).toLocaleTimeString();
-                                const timeInHour = new Date(matchingCheckIn.TimeIn).getHours();
-                                if (timeInHour > 8) {
-                                    textColorTimeIn = "text-red-700"; // Nếu TimeIn > 8 giờ, đặt màu chữ là đỏ
+                            // Nếu có, kiểm tra từng bản ghi trong matchingCheckIn
+                            matchingCheckIn.forEach((checkInRecord) => {
+                                const timeInDate = new Date(checkInRecord.TimeIn);
+                                if (isSameDay(timeInDate, new Date())) { // Sử dụng isSameDay từ date-fns hoặc tương tự từ moment
+                                    console.log("timeInDate: ", timeInDate);
+                                    userCheckInTimeIn = timeInDate.toLocaleTimeString();
+                                    const timeInHour = timeInDate.getHours();
+                                    if (timeInHour > 8) {
+                                        textColorTimeIn = "text-red-700";
+                                    }
                                 }
-                            }
+                            });
 
-                            // Tương tự cho TimeOut
-                            if (matchingCheckOut) {
-                                userCheckOutTimeOut = new Date(matchingCheckOut.TimeOut).toLocaleTimeString();
-                                const timeOutHour = new Date(matchingCheckOut.TimeOut).getHours();
-                                if (timeOutHour < 17) {
-                                    textColorTimeOut = "text-red-700"; // Nếu TimeOut < 5 giờ chiều, đặt màu chữ là xanh
+                            // Tương tự cho matchingCheckOut
+                            matchingCheckOut.forEach((checkOutRecord) => {
+                                const timeOutDate = new Date(checkOutRecord.TimeOut);
+                                if (isSameDay(timeOutDate, new Date())) { // Sử dụng isSameDay từ date-fns hoặc tương tự từ moment
+                                    userCheckOutTimeOut = timeOutDate.toLocaleTimeString();
+                                    const timeOutHour = timeOutDate.getHours();
+                                    if (timeOutHour < 17) {
+                                        textColorTimeOut = "text-red-700";
+                                    }
                                 }
-                            }
+                            });
 
                             // Hiển thị thông tin user
                             return (
