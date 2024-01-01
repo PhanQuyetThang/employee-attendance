@@ -8,6 +8,7 @@ import { FaIdCard } from "react-icons/fa";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaCheck } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
+import { AiFillWarning } from 'react-icons/ai'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { app } from '../firebase'
@@ -19,6 +20,7 @@ const ProfileDetail = () => {
     const dispatch = useDispatch()
 
     const [user, setUser] = useState(null);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({})
     const [updateSuccess, setUpdateSuccess] = useState(false)
@@ -72,7 +74,12 @@ const ProfileDetail = () => {
         console.log(formData);
     };
 
-    const handleSubmit = async (e) => {
+    const handleShowDeleteConfirmation = (e) => {
+        e.preventDefault();
+        setShowDeleteConfirmation(true)
+    }
+
+    const handleUpdateUser = async (e) => {
         e.preventDefault();
         try {
             dispatch(updateUserStart());
@@ -102,10 +109,7 @@ const ProfileDetail = () => {
                 });
                 return;
             }
-
-
             dispatch(updateUserSuccess(data));
-
             // Use toast.success for a success message
             toast.success('Update successfully!', {
                 position: toast.POSITION.TOP_RIGHT,
@@ -121,8 +125,40 @@ const ProfileDetail = () => {
                 position: toast.POSITION.TOP_RIGHT,
                 autoClose: 3000,
             });
+        }
+    };
 
+    const handleDeleteUser = async (e) => {
+        e.preventDefault();
+        console.log("Delete User ID:", user.userID);
 
+        try {
+            const res = await fetch(`/api/user/delete/${user.userID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await res.json();
+            if (data.success === false) {
+                toast.error(`Delete failed: ${data.message}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                    autoClose: 3000,
+                });
+                return;
+            }
+            // Use toast.success for a success message
+            toast.success('Delete successfully!', {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
+            navigate('/manage');
+        } catch (error) {
+            toast.error(`Delete failed: ${error.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 3000,
+            });
         }
     };
 
@@ -162,29 +198,6 @@ const ProfileDetail = () => {
             });
         }
     };
-
-
-    // const handleUpdateBiometric = async (userId) => {
-    //     try {
-    //         const response = await fetch(`/api/user/current-userid/${userId}`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ userId, method }),
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(`Yêu cầu thất bại với mã trạng thái: ${response.status}`);
-    //         }
-
-    //         const data = await response.json();
-    //         console.log("response: ", data); // Bạn có thể xử lý dữ liệu phản hồi ở đây
-
-    //     } catch (error) {
-    //         console.error('Lỗi:', error);
-    //     }
-    // };
 
     const handleDeleteBiometric = async ({ userId, method }) => {
         try {
@@ -226,9 +239,6 @@ const ProfileDetail = () => {
             });
         }
     };
-    ``
-
-
 
     return (
         <>
@@ -237,7 +247,25 @@ const ProfileDetail = () => {
                     Go Back
                 </button>
             </div>
-            <form onSubmit={handleSubmit} className="flex h-1/2 flex-col">
+            {showDeleteConfirmation && (
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <div className="modal-overlay fixed inset-0 bg-black opacity-50"></div>
+                    <div className=" modal-container bg-white w-96 h-46 rounded-lg shadow-lg z-50 overflow-hidden">
+                        <div>
+                            <AiFillWarning className='text-red-700 self-center text-4xl font-semibold mx-auto mt-2' />
+                            <h5 className="text-center p-1 text-red-800 font-semibold" id="exampleModalLabel">Delete Confirmation</h5>
+                        </div>
+                        <div className="text-center p-1 text-slate-600 font-semibold">
+                            <p>Are you sure you want to delete this account?</p>
+                        </div>
+                        <div className=" flex justify-between mx-10 my-3">
+                            <button onClick={(e) => handleDeleteUser(e)} className="w-32 p-1 rounded-3xl bg-red-700 text-white">Confirm</button>
+                            <button onClick={() => setShowDeleteConfirmation(false)} className="w-32 p-2 rounded-3xl bg-slate-700 text-white">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <form className="flex h-1/2 flex-col">
                 <div className="mx-4 mt-24 flex flex-row justify-center bg-white p-4 rounded-lg shadow-lg text-slate-600 gap-3">
                     <div className='w-1/3 rounded-md justify-center flex border'>
                         <div className='flex flex-col w-full mx-4'>
@@ -261,13 +289,13 @@ const ProfileDetail = () => {
 
                                     <div className='flex flex-row justify-between'>
                                         <div className='flex w-2/3' >
-                                            <button className="w-1/2 flex justify-center items-center bg-red-500 py-2 shadow-xl rounded-lg text-white hover:bg-red-800 duration-500">
+                                            <button onClick={(e) => handleShowDeleteConfirmation(e)} className="w-1/2 flex justify-center items-center bg-red-500 py-2 shadow-xl rounded-lg text-white hover:bg-red-800 duration-500">
                                                 <FaRegTrashAlt />
                                             </button>
                                         </div>
                                         <div className='flex w-2/3 justify-end' >
                                             <button className="w-1/2 flex justify-center items-center bg-green-600 py-2 shadow-xl rounded-lg text-white hover:bg-green-800 duration-500">
-                                                <FaCheck />
+                                                <FaCheck onClick={(e) => handleUpdateUser(e)} />
                                             </button>
                                         </div>
 

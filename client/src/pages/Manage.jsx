@@ -68,33 +68,27 @@ export default function Manage() {
         setDeleteConfirmation(!deleteConfirmation)
     }
 
-    const handleDeleteUser = async (userID, password) => {
-        if (password === currentUser.password) {
-            try {
-                setDeleteConfirmation(false);
-                dispatch(deleteUserStart());
-                const res = await fetch(`/api/user/delete/${userID}`, {
-                    method: "DELETE",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await res.json();
-                if (data.success === false) {
-                    dispatch(deleteUserFailure(data.message));
-                    return;
+    const handleDeleteUser = async (userIDToDelete) => {
+        console.log(userIDToDelete);
+        try {
+            setDeleteConfirmation(false);
+            const res = await fetch(`/api/user/delete/${userIDToDelete}`, {
+                method: "DELETE",
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-                navigate('/manage')
-            } catch (error) {
-                dispatch(deleteUserFailure(error.message))
+            });
+            const data = await res.json();
+            if (data.success === false) {
+                return;
             }
-        } else {
-            // Hiển thị thông báo mật khẩu không đúng
-            alert('Mật khẩu không đúng. Vui lòng thử lại.');
+            // Reload trang sau khi xóa thành công
+            window.location.reload();
+        } catch (error) {
+            console.log(error);
         }
+    };
 
-
-    }
 
     return (
         <div className="flex mx-auto mt-16 justify-between gap-4">
@@ -184,10 +178,6 @@ export default function Manage() {
                                 <div>
                                     <AiFillWarning className='text-red-700 self-center text-4xl font-semibold mx-auto mt-2' />
                                     <h5 className="text-center p-1 text-red-800 font-semibold" id="exampleModalLabel">Delete Confirmation</h5>
-                                </div>
-                                <div className="text-center p-1 text-slate-600 font-semibold">
-                                    <p>Please enter admin password to delete this user</p>
-                                    <input type="password" id='password' onChange={handleInputPassword} className='w-3/4 p-1 border-1 border-slate-400 rounded outline-none mt-3 hover:border-violet-700 transition-all duration-500' />
                                 </div>
                                 <div className="flex justify-between mx-10 my-3">
                                     <button onClick={() => handleDeleteUser(userIDToDelete)} className="w-32 p-1 rounded-3xl bg-red-700 text-white">Confirm</button>

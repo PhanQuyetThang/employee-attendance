@@ -64,17 +64,35 @@ export const testdelete = async (req, res, next) => {
     }
 }
 
-export const deleteUser = async (req, res, next) => {
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
     try {
-        const result = await User.deleteOne({ userID: req.params.id });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: "Người dùng không tồn tại." });
+        // Xóa từ bảng User
+        const deleteUserResult = await User.deleteOne({ userID: id });
+
+        // Xóa từ bảng TimeInLog
+        const deleteTimeInLogResult = await TimeInLog.deleteMany({ userID: id });
+
+        // Xóa từ bảng TimeOutLog
+        const deleteTimeOutLogResult = await TimeOutLog.deleteMany({ userID: id });
+
+        // Kiểm tra xem có bản ghi nào đã được xóa không
+        if (
+            deleteUserResult.deletedCount > 0 ||
+            deleteTimeInLogResult.deletedCount > 0 ||
+            deleteTimeOutLogResult.deletedCount > 0
+        ) {
+            return res.status(200).json({ success: true, message: "Đã xóa tất cả các bản ghi có trùng userID." });
+        } else {
+            return res.status(404).json({ success: false, message: "Không có bản ghi nào được xóa với userID đã cho." });
         }
-        res.status(200).json({ success: true, message: "Người dùng đã được xóa!" });
     } catch (error) {
-        next(error);
+        console.error("Error deleting records:", error);
+        return res.status(500).json({ success: false, message: "Đã có lỗi xảy ra trong quá trình xóa." });
     }
 };
+
+
 
 
 export const getUser = async (req, res, next) => {

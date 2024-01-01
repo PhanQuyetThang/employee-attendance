@@ -101,33 +101,7 @@ export default function Profile() {
         setShowSignOutConfirmation(false)
         console.log(showSignOutConfirmation)
     }
-    // const handleDeleteUserConfirmed = async () => {
-    //     if (password === currentUser.password) {
-    //         try {
-    //             setShowDeleteConfirmation(false); // Ẩn modal xác nhận
-    //             console.log(setShowDeleteConfirmation)
-    //             dispatch(deleteUserStart());
-    //             const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-    //                 method: "DELETE",
-    //                 headers: {
-    //                     'Content-Type': 'application/json'
-    //                 }
-    //             });
-    //             const data = await res.json();
-    //             if (data.success === false) {
-    //                 dispatch(deleteUserFailure(data.message));
-    //                 return;
-    //             }
-    //             dispatch(deleteUserSuccess(data));
-    //         } catch (error) {
-    //             dispatch(deleteUserFailure(error.message));
-    //         }
-    //     } else {
-    //         // Hiển thị thông báo mật khẩu không đúng
-    //         alert('Mật khẩu không đúng. Vui lòng thử lại.');
-    //     }
 
-    // }
 
     const handleSignOut = async () => {
         dispatch(signOutUserStart())
