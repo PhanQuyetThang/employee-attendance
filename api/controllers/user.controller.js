@@ -168,8 +168,9 @@ export const AttendanceDetail = async (req, res, next) => {
 
 export const saveBiometric = async (req, res, next) => {
     try {
-        const { userId, method, data } = req.body;
+        const { userId, method } = req.body;
         const user = await User.findOne({ userID: userId });
+        const data = "Đã có dữ liệu";
 
         if (!user) {
             throw new Error("User not found");
@@ -181,7 +182,7 @@ export const saveBiometric = async (req, res, next) => {
         } else {
             user.biometrics.push({
                 method: method,
-                data: data
+                data: data,
             });
         }
         await user.save();
