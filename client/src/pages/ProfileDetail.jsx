@@ -35,27 +35,20 @@ const ProfileDetail = () => {
                 const data = await response.json();
 
                 if (!response.ok || data.success === false) {
-                    // Xử lý khi có lỗi hoặc user không tồn tại
                     console.error(data.message || 'User not found');
-                    // Redirect về trang trước đó nếu có lỗi hoặc user không tồn tại
                     return;
                 }
                 setUser(data);
 
-                // Phân loại biometrics theo method và lưu vào state
                 const biometricsByMethod = data.biometrics.reduce((acc, biometric) => {
                     const { method } = biometric;
-                    // Kiểm tra xem mảng cho method đã tồn tại chưa, nếu chưa thì tạo mới
                     acc[method] = acc[method] || [];
-                    // Thêm biometric vào mảng tương ứng với method
                     acc[method].push(biometric);
                     return acc;
                 }, {});
 
-                // Lưu biometrics vào state tương ứng
                 setFingerPrint(biometricsByMethod.fingerprint || []);
                 setRfid(biometricsByMethod.RFID || []);
-
             } catch (error) {
                 console.error(error);
             }
@@ -63,7 +56,15 @@ const ProfileDetail = () => {
 
         // Gọi hàm fetchUserData khi userId.id thay đổi hoặc component được mount
         fetchUserData();
-    }, []); // Thêm [] để đảm bảo useEffect chỉ chạy một lần sau khi component mount
+
+        // Thiết lập interval để fetch dữ liệu mỗi 5 giây (hoặc bất kỳ khoảng thời gian nào bạn muốn)
+        const intervalId = setInterval(() => {
+            fetchUserData();
+        }, 5000);
+
+        // Cleanup: Dừng interval khi component bị hủy
+        return () => clearInterval(intervalId);
+    }, [userId.id]); // Theo dõi sự thay đổi của userId.id
 
     if (!user) {
         return <div>Loading...</div>;

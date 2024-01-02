@@ -38,20 +38,34 @@ export default function Report() {
     console.log(dates)
 
     useEffect(() => {
-        // Thực hiện một HTTP request để lấy danh sách người dùng từ server
-        fetch('/api/user/get-user')
-            .then((response) => response.json())
-            .then((data) => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/user/get-user');
+                const data = await response.json();
 
-                setUsers(data.users)
+                setUsers(data.users);
                 setUserCheckIn(data.userCheckIn);
-                setUserCheckOut(data.userCheckOut)
-                console.log("check users: ", users);
-                console.log("check users: ", userCheckIn);
-                console.log("check users: ", userCheckOut);
-            })
-            .catch((error) => console.error(error));
-    }, []);
+                setUserCheckOut(data.userCheckOut);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        // Fetch data ngay sau khi component được mount
+        fetchData();
+
+        // Thiết lập interval để fetch dữ liệu mỗi 5 giây (hoặc bất kỳ khoảng thời gian nào bạn muốn)
+        const intervalId = setInterval(() => {
+            fetchData();
+        }, 5000);
+
+        // Cleanup: Dừng interval khi component bị hủy
+        return () => clearInterval(intervalId);
+    }, []); // Dependency array rỗng để chỉ chạy một lần sau khi component được mount
+
+    console.log("check users: ", users);
+    console.log("check users: ", userCheckIn);
+    console.log("check users: ", userCheckOut);
 
     // const handleCreateUser = () => {
     //     setShowCreateUserForm(true)

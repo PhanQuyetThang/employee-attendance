@@ -203,11 +203,11 @@ export default function Manage() {
                                     Detail
                                 </p>
                             </div>
-                            <div className='sm:w-1/5 flex justify-center ml-3'>
+                            {/* <div className='sm:w-1/5 flex justify-center ml-3'>
                                 <p className="text-slate-800 md:my-0 my-7 pl-2 pr-2 text-center duration-500">
                                     Action
                                 </p>
-                            </div>
+                            </div> */}
                         </div>
                         {users.map((user) => (
                             <div className='bg-slate-300 rounded bg-opacity-30 my-3 p-3 mr-2 sm:flex font-light text-md sm:items-center sm:justify-between sm:gap-2'>
@@ -228,13 +228,13 @@ export default function Manage() {
                                         </button>
                                     </Link>
                                 </div>
-                                <div className='sm:w-1/5 flex justify-center ml-10'>
+                                {/* <div className='sm:w-1/5 flex justify-center ml-10'>
                                     <Link className='flex self-center text-center' onClick={() => handleClickDeleteUser(user.userID)}>
                                         <button className='p-2 ml-2 w-8 flex justify-end rounded-full text-center text-white bg-red-700 hover:bg-red-900 hover:scale-125 duration-500'>
                                             <MdDelete />
                                         </button>
                                     </Link>
-                                </div>
+                                </div> */}
                             </div>
                         ))}
                     </div>
