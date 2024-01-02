@@ -240,7 +240,7 @@ export const ESPToDeleteBiometric = async (req, res, next) => {
                 { $pull: { biometrics: { method: method } } }
             );
 
-            currentDataToDelete = deletedBiometric;
+            currentDataToDelete = { userId: userId, method: method };
             isDataAvailableToDelete = true;
             res.json({ data: currentDataToDelete, message: 'Data to delete updated successfully' });
         } else {
