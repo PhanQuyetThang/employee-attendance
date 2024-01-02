@@ -290,7 +290,7 @@ export const checkAttendance = async (req, res, next) => {
         const { method, data } = req.body;
         const user = await User.findOne({
             'biometrics.method': method,
-            'biometrics.data': data,
+            'userID': data,
         });
         if (!user) {
             throw new Error("User not found");
