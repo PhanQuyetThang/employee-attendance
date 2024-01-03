@@ -11,7 +11,8 @@ import { useSelector, useDispatch } from "react-redux"
 
 import { DatePicker } from 'antd';
 // Sử dụng date-fns
-import { isSameDay } from 'date-fns';
+import { isSameDay, parseISO } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 import moment from 'moment'
 
 const { RangePicker } = DatePicker
@@ -46,6 +47,7 @@ export default function Report() {
                 setUsers(data.users);
                 setUserCheckIn(data.userCheckIn);
                 setUserCheckOut(data.userCheckOut);
+
             } catch (error) {
                 console.error(error);
             }
@@ -64,8 +66,8 @@ export default function Report() {
     }, []); // Dependency array rỗng để chỉ chạy một lần sau khi component được mount
 
     console.log("check users: ", users);
-    console.log("check users: ", userCheckIn);
-    console.log("check users: ", userCheckOut);
+    console.log("check users checkin: ", userCheckIn);
+    console.log("check users checkout: ", userCheckOut);
 
     // const handleCreateUser = () => {
     //     setShowCreateUserForm(true)
@@ -167,14 +169,29 @@ export default function Report() {
                             const matchingCheckOut = userCheckOut.filter((checkOut) => checkOut.userID == user.userID);
                             console.log("matchingCheckOut: ", matchingCheckOut);
 
-                            // Nếu có, kiểm tra từng bản ghi trong matchingCheckIn
                             matchingCheckIn.forEach((checkInRecord) => {
-                                const timeInDate = new Date(checkInRecord.TimeIn);
-                                if (isSameDay(timeInDate, new Date())) { // Sử dụng isSameDay từ date-fns hoặc tương tự từ moment
-                                    console.log("timeInDate: ", timeInDate);
-                                    userCheckInTimeIn = timeInDate.toLocaleTimeString();
-                                    const timeInHour = timeInDate.getHours();
-                                    if (timeInHour > 8) {
+                                const timeInDate = checkInRecord.TimeIn;
+                                console.log("timeInDate (string): ", checkInRecord.TimeIn);
+
+                                // Tạo đối tượng Date từ timeInDate mà không chuyển đổi múi giờ
+                                const parsedTimeInDate = new Date(timeInDate.slice(0, -1));
+                                console.log("timeInDate (Date): ", parsedTimeInDate);
+
+                                if (isSameDay(parsedTimeInDate, new Date())) {
+                                    // Sử dụng options để set múi giờ khi gọi toLocaleTimeString
+                                    const timeOptions = {
+                                        timeZone: 'Asia/Ho_Chi_Minh', // Thay thế bằng múi giờ mong muốn của bạn, ví dụ: 'Asia/Ho_Chi_Minh'
+                                        hour12: false, // Sử dụng định dạng 24 giờ
+                                    };
+
+                                    userCheckInTimeIn = parsedTimeInDate.toLocaleTimeString('en-US', timeOptions);
+                                    console.log("userCheckInTimeIn: ", userCheckInTimeIn);
+
+                                    const timeInHour = parsedTimeInDate.getHours();
+                                    const timeInMinute = parsedTimeInDate.getMinutes();
+                                    console.log("timeInMinute: ", timeInMinute);
+                                    console.log("timeInHour: ", timeInHour);
+                                    if (timeInHour > 8 || (timeInHour === 8 && timeInMinute >= 1)) {
                                         textColorTimeIn = "text-red-700";
                                     }
                                 }
@@ -182,11 +199,26 @@ export default function Report() {
 
                             // Tương tự cho matchingCheckOut
                             matchingCheckOut.forEach((checkOutRecord) => {
-                                const timeOutDate = new Date(checkOutRecord.TimeOut);
-                                if (isSameDay(timeOutDate, new Date())) { // Sử dụng isSameDay từ date-fns hoặc tương tự từ moment
-                                    userCheckOutTimeOut = timeOutDate.toLocaleTimeString();
-                                    const timeOutHour = timeOutDate.getHours();
-                                    if (timeOutHour < 17) {
+                                const timeOutDate = checkOutRecord.TimeOut;
+                                console.log("timeOutDate (string): ", timeOutDate);
+
+                                // Tạo đối tượng Date từ timeOutDate mà không chuyển đổi múi giờ
+                                const parsedTimeOutDate = new Date(timeOutDate.slice(0, -1));
+                                console.log("timeOutDate (Date): ", parsedTimeOutDate);
+
+                                if (isSameDay(parsedTimeOutDate, new Date())) {
+                                    // Sử dụng options để set múi giờ khi gọi toLocaleTimeString
+                                    const timeOptions = {
+                                        timeZone: 'Asia/Ho_Chi_Minh', // Thay thế bằng múi giờ mong muốn của bạn, ví dụ: 'Asia/Ho_Chi_Minh'
+                                        hour12: false, // Sử dụng định dạng 24 giờ
+                                    };
+
+                                    userCheckOutTimeOut = parsedTimeOutDate.toLocaleTimeString('en-US', timeOptions);
+                                    console.log("userCheckOutTimeOut: ", userCheckOutTimeOut);
+
+                                    const timeOutHour = parsedTimeOutDate.getHours();
+                                    const timeOutMinute = parsedTimeOutDate.getMinutes();
+                                    if (timeOutHour < 17 || (timeOutHour === 17 && timeOutMinute === 0)) {
                                         textColorTimeOut = "text-red-700";
                                     }
                                 }
