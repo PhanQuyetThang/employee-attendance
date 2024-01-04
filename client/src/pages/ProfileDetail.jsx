@@ -80,8 +80,7 @@ const ProfileDetail = () => {
         setShowDeleteConfirmation(true)
     }
 
-    const handleUpdateUser = async (e) => {
-        e.preventDefault();
+    const handleUpdateUser = async () => {
         try {
             dispatch(updateUserStart());
 
@@ -283,12 +282,9 @@ const ProfileDetail = () => {
                                         {user.username}
                                     </td>
                                     <th className='w-2/3 text-sm mx-2 text-violet-900'>Email</th>
-                                    <td class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">
-                                        {user.email}
-                                    </td>
+                                    <input onChange={handleChange} defaultValue={user.email} id="email" placeholder="email..." class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white" />
                                     <th className='w-2/3 text-sm mx-2 text-violet-900'>Role</th>
-                                    <td class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white">{user.role}</td>
-
+                                    <input onChange={handleChange} defaultValue={user.role} id="role" placeholder="role..." class="px-2 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white" />
 
                                     <div className='flex flex-row justify-between'>
                                         <div className='flex w-2/3' >
@@ -297,8 +293,8 @@ const ProfileDetail = () => {
                                             </button>
                                         </div>
                                         <div className='flex w-2/3 justify-end' >
-                                            <button className="w-1/2 flex justify-center items-center bg-green-600 py-2 shadow-xl rounded-lg text-white hover:bg-green-800 duration-500">
-                                                <FaCheck onClick={(e) => handleUpdateUser(e)} />
+                                            <button onClick={handleUpdateUser} className="w-1/2 flex justify-center items-center bg-green-600 py-2 shadow-xl rounded-lg text-white hover:bg-green-800 duration-500">
+                                                <FaCheck />
                                             </button>
                                         </div>
 

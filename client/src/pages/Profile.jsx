@@ -176,8 +176,7 @@ export default function Profile() {
 
                                     <label className='text-sm ml-1 mb-1 mx-2 font-bold text-violet-900'>Email</label>
                                     <input disabled defaultValue={currentUser.email} id="email" class="px-6 py-2 border mb-2 mx-2 rounded font-medium text-sm whitespace-nowrap dark:text-white" />
-                                    <label className='text-sm ml-1 mb-1 mx-2 font-bold text-violet-900'>Password</label>
-                                    <input disabled id="password" placeholder="password..." class="px-6 py-2 border mb-2 mx-2 rounded font-medium text-sm whitespace-nowrap dark:text-white" />
+
                                 </div>
                             </div>
                             <div className="flex justify-between mt-3">
@@ -201,14 +200,6 @@ export default function Profile() {
                                 <label className='text-sm ml-1 mb-1 font-bold text-violet-900'>Department</label>
                                 <input disabled defaultValue={currentUser.department} id="department" placeholder="Department" className="px-6 py-2 border mb-2 rounded font-medium text-sm whitespace-nowrap dark:text-white" />
                             </div>
-                        </div>
-
-                        <div className='flex justify-center gap-4'>
-                            <button
-                                disabled={loading}
-                                className='bg-slate-700 text-white p-2 w-1/3 rounded-lg uppercase hover:shadow-lg hover:bg-slate-800 disabled:opacity-70 duration-500'>
-                                {loading ? 'loading...' : 'update'}
-                            </button>
                         </div>
                     </div>
 

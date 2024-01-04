@@ -63,13 +63,16 @@ export default function AttendanceDetail() {
                         // Xử lý sự kiện chấm công vào làm
                         if (responseData.attendanceIn) {
                             responseData.attendanceIn.forEach((attendanceInEvent) => {
-                                const timeIn = new Date(attendanceInEvent.TimeIn);
+                                const timeInLog = attendanceInEvent.TimeIn;
+                                console.log('attendanceInEvent: ', attendanceInEvent);
+                                const timeIn = new Date(timeInLog.slice(0, -1))
+                                console.log('timeIn: ', timeIn);
                                 const isLate = timeIn.getHours() > 8;
 
                                 events.push({
                                     title: isLate ? 'Trễ' : 'Checkin',
-                                    start: attendanceInEvent.TimeIn,
-                                    end: attendanceInEvent.TimeIn, // Thay đổi nếu cần
+                                    start: timeIn,
+                                    end: timeIn,
                                     color: isLate ? 'red' : 'green', // Màu sắc cho sự kiện chấm công vào làm
                                 });
                             });
@@ -78,13 +81,15 @@ export default function AttendanceDetail() {
                         // Xử lý sự kiện chấm công tan làm
                         if (responseData.attendanceOut) {
                             responseData.attendanceOut.forEach((attendanceOutEvent) => {
-                                const timeOut = new Date(attendanceOutEvent.TimeOut);
+                                const timeOutLog = attendanceOutEvent.TimeOut;
+                                console.log('attendanceOutEvent: ', attendanceOutEvent);
+                                const timeOut = new Date(timeOutLog.slice(0, -1))
                                 const isEarly = timeOut.getHours() < 17;
 
                                 events.push({
                                     title: isEarly ? 'Sớm' : 'Checkout',
-                                    start: attendanceOutEvent.TimeOut,
-                                    end: attendanceOutEvent.TimeOut, // Thay đổi nếu cần
+                                    start: timeOut,
+                                    end: timeOut,
                                     color: isEarly ? 'red' : 'green', // Màu sắc cho sự kiện chấm công tan làm
                                 });
                             });
