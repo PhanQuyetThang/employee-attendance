@@ -116,6 +116,8 @@ const ProfileDetail = () => {
                 position: toast.POSITION.TOP_RIGHT,
                 autoClose: 3000,
             });
+            // Reload trang sau khi xóa thành công
+            window.location.reload();
 
             console.log("Update Success After Dispatch:", updateSuccess);
         } catch (error) {
